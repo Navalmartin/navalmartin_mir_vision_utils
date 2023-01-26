@@ -1,0 +1,10 @@
+torch
+torchvision
+numpy
+dataclasses
+Pillow
+matplotlib
+opencv-python
+scipy
+scikit-image
+libsvm
