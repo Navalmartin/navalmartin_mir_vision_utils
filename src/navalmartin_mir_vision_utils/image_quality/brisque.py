@@ -16,10 +16,10 @@ import skimage.color
 import skimage.transform
 from libsvm import svmutil
 
-from src.navalmartin_mir_vision_utils.statistics.distributions.asymmetric_generalized_gaussian import AsymmetricGeneralizedGaussian
-from src.navalmartin_mir_vision_utils.statistics.statistics_utils import gaussian_kernel2d
-from src.navalmartin_mir_vision_utils.image_transformers import pil2ndarray
-from src.navalmartin_mir_vision_utils.image_quality.models import MODELS_PATH
+from navalmartin_mir_vision_utils.statistics.distributions.asymmetric_generalized_gaussian import AsymmetricGeneralizedGaussian
+from navalmartin_mir_vision_utils.statistics.statistics_utils import gaussian_kernel2d
+from navalmartin_mir_vision_utils.image_transformers import pil2ndarray
+from navalmartin_mir_vision_utils.image_quality.models import MODELS_PATH
 
 VALID_BRISQUE_IMAGE_FORMATS = ['JPG', 'JPEG']
 

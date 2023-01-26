@@ -14,7 +14,7 @@ import torch
 import torchvision
 from torchvision import transforms
 
-from src.navalmartin_mir_vision_utils.image_enums import ImageFileEnumType, ImageLoadersEnumType, IMAGE_LOADERS, IMAGE_STR_TYPES
+from navalmartin_mir_vision_utils.image_enums import ImageFileEnumType, ImageLoadersEnumType, IMAGE_LOADERS, IMAGE_STR_TYPES
 
 _VALID_PIL_MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr"]
 
