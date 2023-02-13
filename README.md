@@ -27,12 +27,14 @@ The project incorporates the following repositories
 Installing the utilities via ```pip```
 
 ```
-pip install -i https://test.pypi.org/simple/ navalmartin-mir-vision-utils==0.0.2
+pip install -navalmartin-mir-vision-utils
 ```
 
-Notice that the project is pulled from ```TestPyPi``` which does not have the same packages
-as the official PyPi index. This means that dependencies may fail to install. It is advised therefore
-to manually install the dependencies mentioned above.
+For a specific version use
+
+```
+pip install -navalmartin-mir-vision-utils==x.x.x
+```
 
 You can uninstall the project via
 
