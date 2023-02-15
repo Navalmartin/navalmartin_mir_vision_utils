@@ -27,13 +27,13 @@ The project incorporates the following repositories
 Installing the utilities via ```pip```
 
 ```
-pip install -navalmartin-mir-vision-utils
+pip install navalmartin-mir-vision-utils
 ```
 
 For a specific version use
 
 ```
-pip install -navalmartin-mir-vision-utils==x.x.x
+pip install navalmartin-mir-vision-utils==x.x.x
 ```
 
 You can uninstall the project via
