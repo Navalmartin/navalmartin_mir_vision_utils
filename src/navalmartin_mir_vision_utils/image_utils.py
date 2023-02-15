@@ -14,9 +14,49 @@ import torch
 import torchvision
 from torchvision import transforms
 
-from navalmartin_mir_vision_utils.image_enums import ImageFileEnumType, ImageLoadersEnumType, IMAGE_LOADERS, IMAGE_STR_TYPES
+from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
+from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLoadersEnumType,
+                                                      IMAGE_LOADERS, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
+from navalmartin_mir_vision_utils.io.file_utils import ERROR
 
-_VALID_PIL_MODES = ["1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr"]
+
+def is_valid_pil_image_file(image: Path) -> Image:
+    """Check if the given image is a valid Pillow image
+
+    Parameters
+    ----------
+    image: The image filename
+
+    Returns
+    -------
+    an instance of a PIL.Image if the image is valid or None
+    """
+
+    try:
+        img = Image.open(image)
+        img.verify()
+        return img
+    except (IOError, SyntaxError) as e:
+        print(f"{ERROR} the file {image} is corrupted")
+        return None
+
+
+def get_pil_image_size(image: Image) -> tuple:
+    """Returns the width, height of the given Pillow image
+
+    Parameters
+    ----------
+    image: The PIL.Image
+
+    Returns
+    -------
+    A tuple representing width, height
+    """
+
+    if image is None:
+        raise ValueError("The provided image is None")
+
+    return image.size
 
 
 def plot_pytorch_tensor_images(images: torch.Tensor, title: str,
@@ -85,7 +125,7 @@ def list_image_files(base_path: Path,
                 yield image_path
 
 
-def get_img_files(img_dir: Path,
+def get_img_files(base_path: Path,
                   img_formats: Union[List | tuple] = IMAGE_STR_TYPES) -> List[Path]:
     """Get the image files in the given image directory that have
     the specified image format.
@@ -100,7 +140,7 @@ def get_img_files(img_dir: Path,
     An instance of List[Path]
     """
 
-    return list(list_image_files(base_path=img_dir, valid_exts=img_formats))
+    return list(list_image_files(base_path=base_path, valid_exts=img_formats))
 
 
 def remove_metadata_from_image(image: Image, new_filename: Path) -> None:
@@ -168,8 +208,8 @@ def load_images_from_paths(imgs: List[Path], transformer: Callable,
     if len(imgs) == 0:
         raise ValueError("Empty images paths")
 
-    if loader not in ImageLoadersEnumType.IMAGE_LOADERS:
-        raise ValueError(f"Invalid loader. Loader={loader} not in {ImageLoadersEnumType.IMAGE_LOADERS}")
+    if loader not in IMAGE_LOADERS:
+        raise ValueError(f"Invalid loader. Loader={loader} not in {IMAGE_LOADERS}")
 
     imgs_data = []
     for img in imgs:
@@ -180,7 +220,7 @@ def load_images_from_paths(imgs: List[Path], transformer: Callable,
 
 def load_images(path: Path, transformer: Callable = None,
                 loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
-                img_formats = IMAGE_STR_TYPES) -> List:
+                img_formats: tuple = IMAGE_STR_TYPES) -> List:
     """Loads all the images in the specified path
 
     Parameters
@@ -417,7 +457,7 @@ def save_img_from_str(img_str: str, encoding: str,
 
     # convert bytes data to PIL Image object
 
-    if mode not in _VALID_PIL_MODES:
+    if mode not in VALID_PIL_MODES_STR:
         raise InvalidPILImageMode(mode=mode)
 
     if encoding is None:
