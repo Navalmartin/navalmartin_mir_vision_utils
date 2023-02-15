@@ -44,4 +44,4 @@ class ValidPillowEnumType(Enum):
     YCbCr = 12
 
 
-VALID_PIL_MODES = ("1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr")
+VALID_PIL_MODES_STR = ("1", "CMYK", "F", "HSV", "I", "L", "LAB", "P", "RGB", "RGBA", "RGBX", "YCbCr")
