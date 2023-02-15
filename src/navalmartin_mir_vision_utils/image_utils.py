@@ -4,8 +4,10 @@
 import os
 import shutil
 from pathlib import Path
+from io import BytesIO
 from typing import Callable, List, Union
 from PIL import Image
+import PIL
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,6 +22,28 @@ from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLo
 from navalmartin_mir_vision_utils.io.file_utils import ERROR
 
 
+def is_valid_pil_image_from_bytes_string(image_byte_string: str) -> Image:
+    """Check if the provided bytes correspond to a valid
+    PIL.Image
+
+    Parameters
+    ----------
+    image_byte_string: The string bytes that correspond to an image
+
+    Returns
+    -------
+
+    An instance of a PIL.Image if the image is valid or None
+    """
+    try:
+        image = Image.open(BytesIO(image_byte_string))
+        image.verify()
+        return image
+    except (IOError, SyntaxError) as e:
+        print(f"{ERROR} the image_byte_string is corrupted")
+        return None
+
+
 def is_valid_pil_image_file(image: Path) -> Image:
     """Check if the given image is a valid Pillow image
 
@@ -29,7 +53,7 @@ def is_valid_pil_image_file(image: Path) -> Image:
 
     Returns
     -------
-    an instance of a PIL.Image if the image is valid or None
+    An instance of a PIL.Image if the image is valid or None
     """
 
     try:
@@ -411,12 +435,13 @@ def save_img(image: Image, filename: Path, img_format: str = None) -> None:
         image.save(filename, format=img_format)
 
 
-def show_img(img) -> None:
+def show_pil_image(image: Image) -> None:
     """Show the image depending on the
     type
 
     Parameters
     ----------
+    image
     img: The image to show
 
     Returns
@@ -424,8 +449,7 @@ def show_img(img) -> None:
 
     """
 
-    # if isinstance(img, PIL.Image):
-    img.show()
+    image.show()
 
 
 def save_img_from_str(img_str: str, encoding: str,
