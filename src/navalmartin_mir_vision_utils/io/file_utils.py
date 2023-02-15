@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Any
+from typing import List, Any, Union
 import json
 import os
 import csv
@@ -10,6 +10,38 @@ import uuid
 
 INFO = "INFO: "
 WARNING = "WARNING: "
+ERROR = "ERROR: "
+
+
+def has_suffix(filename: Union[Path, str], suffixes: List[str]) -> bool:
+    """Assumes that the filename path givens has a structure
+    of directories separated with '/'. The last name is assumed
+    to be the filename that we look to verify the suffix
+
+   Parameters
+   ----------
+   filename
+   suffixes
+
+   Returns
+   -------
+
+   """
+
+    if isinstance(filename, Path):
+        filename_copy = str(filename)
+    else:
+        filename_copy = filename
+
+    filename, file_extension = os.path.splitext(filename_copy)
+
+    if file_extension in suffixes:
+        return True
+
+    return False
+
+
+
 
 
 def read_json(filename: Path) -> dict:
@@ -96,8 +128,8 @@ def create_dir(path: Path, dirname: str):
         raise ValueError("Could not create directory. The directory={0} exist".format(dir_path))
 
 
-def save_list_as_csv(list_inst: List[Any], filename: Path, write_default_header: bool=False,
-                     header: Any=None) -> None:
+def save_list_as_csv(list_inst: List[Any], filename: Path, write_default_header: bool = False,
+                     header: Any = None) -> None:
     """Save the given list in a csv file format
 
     Parameters
@@ -168,7 +200,6 @@ def copy_file_from_to(source: Path, dst: Path) -> None:
 
 
 def copy_files_from_to(sources: List[Path], dsts: List[Path]):
-
     for src, dist in zip(sources, dsts):
         copy_file_from_to(source=src, dst=dist)
 
@@ -178,7 +209,6 @@ def move_file_from_to(src: Path, dist: Path):
 
 
 def move_files_from_to(sources: List[Path], dsts: List[Path]):
-
     if len(sources) != len(dsts):
         raise ValueError("Invalid size of sources and destinations")
 
@@ -193,7 +223,6 @@ def rename_file(src: Path, dst: Path):
 def compare_dirs(dir_path_1: Path, dir_path_2: Path,
                  ignore_suffixes: bool,
                  sort_contents: bool = True) -> None:
-
     """Compare the contents of the two directories.
     Throws a ValueError exception is the directories
     do not have the same contents according to the specified
@@ -285,5 +314,3 @@ def get_all_files(dir_path: Path, file_formats: List[str],
             raise ValueError(f"The given path {dir_path / filename} is a directory but no batches are assumed")
 
     return files
-
-
