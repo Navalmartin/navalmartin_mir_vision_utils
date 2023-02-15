@@ -44,6 +44,8 @@ pip3 uninstall navalmartin_mir_vision_utils
 
 ## How to use
 
+Below are some use-case samples. You can find more in the <a href="./src/navalmartin_mir_vision_utils/examples">examples</a>.
+
 ### Using ```image_utils```
 
 ```
