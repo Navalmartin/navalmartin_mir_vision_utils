@@ -39,7 +39,7 @@ pip install navalmartin-mir-vision-utils==x.x.x
 You can uninstall the project via
 
 ```commandline
-pip3 uninstall navalmartin_mir_vision_utils
+pip3 uninstall navalmartin-mir-vision-utils
 ```
 
 ## How to use

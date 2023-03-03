@@ -24,7 +24,7 @@ class ImageLoadersEnumType(Enum):
     PYTORCH_TENSOR = 4
 
 
-IMAGE_LOADERS = ('PIL', 'CV2', 'PIL_NUMPY', 'PYTORCH_TENSOR')
+IMAGE_LOADERS_TYPES_STR = ('PIL', 'CV2', 'PIL_NUMPY', 'PYTORCH_TENSOR')
 
 
 class ValidPillowEnumType(Enum):

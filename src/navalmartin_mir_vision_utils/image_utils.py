@@ -18,13 +18,13 @@ from torchvision import transforms
 
 from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
 from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLoadersEnumType,
-                                                      IMAGE_LOADERS, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
+                                                      IMAGE_LOADERS_TYPES_STR, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
 from navalmartin_mir_vision_utils.io.file_utils import ERROR
 
 
 def is_valid_pil_image_from_bytes_string(image_byte_string: str) -> Image:
     """Check if the provided bytes correspond to a valid
-    PIL.Image
+    PIL.Image. If IOError or  SyntaxError is raised it returns None
 
     Parameters
     ----------
@@ -41,6 +41,7 @@ def is_valid_pil_image_from_bytes_string(image_byte_string: str) -> Image:
         return image
     except (IOError, SyntaxError) as e:
         print(f"{ERROR} the image_byte_string is corrupted")
+        print(f"Exception message {str(e)}")
         return None
 
 
@@ -232,8 +233,8 @@ def load_images_from_paths(imgs: List[Path], transformer: Callable,
     if len(imgs) == 0:
         raise ValueError("Empty images paths")
 
-    if loader not in IMAGE_LOADERS:
-        raise ValueError(f"Invalid loader. Loader={loader} not in {IMAGE_LOADERS}")
+    if loader not in IMAGE_LOADERS_TYPES_STR:
+        raise ValueError(f"Invalid loader. Loader={loader} not in {IMAGE_LOADERS_TYPES_STR}")
 
     imgs_data = []
     for img in imgs:
@@ -326,8 +327,8 @@ def load_img(path: Path, transformer: Callable = None,
     transform
     """
 
-    if loader.name.upper() not in IMAGE_LOADERS:
-        raise ValueError(f"Invalid image loader={loader.name.upper()} not in {IMAGE_LOADERS}")
+    if loader.name.upper() not in IMAGE_LOADERS_TYPES_STR:
+        raise ValueError(f"Invalid image loader={loader.name.upper()} not in {IMAGE_LOADERS_TYPES_STR}")
 
     if loader == ImageLoadersEnumType.PIL:
         return load_image_as_pillow(path=path, transformer=transformer)

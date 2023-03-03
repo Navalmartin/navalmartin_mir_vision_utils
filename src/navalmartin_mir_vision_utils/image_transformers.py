@@ -17,7 +17,7 @@ def pil2ndarray(image: Image) -> np.ndarray:
     return np.asarray(image)
 
 
-def pil_image_to_bytes_string(image: Image) -> str:
+def pil_image_to_bytes_string(image: Image) -> bytes:
     """Returns the byte string of the provided image.
     Code adapted from https://stackoverflow.com/questions/33101935/convert-pil-image-to-byte-array
     Parameters
