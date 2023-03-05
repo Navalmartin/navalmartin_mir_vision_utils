@@ -1,9 +1,7 @@
 torch
 torchvision
 numpy
-dataclasses
 Pillow
-matplotlib
 scipy
 scikit-image
 libsvm
