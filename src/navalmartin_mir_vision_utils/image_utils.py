@@ -7,8 +7,6 @@ from pathlib import Path
 from io import BytesIO
 from typing import Callable, List, Union
 from PIL import Image
-import PIL
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -379,10 +377,16 @@ def load_image_cv2(path: Path, transformer: Callable = None):
     OpenCV image matrix
     """
 
-    image = cv2.imread(str(path))
+    try:
+        import cv2
+        image = cv2.imread(str(path))
 
-    if transformer is not None:
-        image = transformer(image)
+        if transformer is not None:
+            image = transformer(image)
+    except ModuleNotFoundError as e:
+        print(f"An exception was raised in load_image_cv2. Message {str(e)}")
+        print(f"navalmartin-mir-vision-utils has not been set up with OpenCV suppert")
+        return None
 
     return image
 

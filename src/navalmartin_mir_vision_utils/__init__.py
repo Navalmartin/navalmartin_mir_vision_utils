@@ -1,7 +1,7 @@
 """
 Various utilities for working with images in the _mir_ project.
 """
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 from .image_utils import (load_img,
                           ImageLoadersEnumType,
                           is_valid_pil_image_from_bytes_string,
