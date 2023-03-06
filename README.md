@@ -11,6 +11,8 @@ The project incorporates the following repositories
 
 ## Dependencies
 
+The general dependencies are
+
 - torch
 - torchvision
 - numpy
@@ -21,6 +23,8 @@ The project incorporates the following repositories
 - scipy
 - scikit-image
 - libsvm
+
+Depending on what you use, not all the dependencies are necessary.
 
 ## Installation
 
