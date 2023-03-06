@@ -1,8 +1,15 @@
 import matplotlib.pyplot as plt
-import torch
-import torchvision
 
-def plot_pytorch_tensor_images(images: torch.Tensor, title: str,
+from navalmartin_mir_vision_utils import WITH_TORCH, TorchTensor
+
+if WITH_TORCH:
+    import torch
+    import torchvision
+
+
+
+
+def plot_pytorch_tensor_images(images: TorchTensor, title: str,
                                images_per_row: int) -> None:
     """Plot the images represented as PyTorch.Tensor tensors
 
@@ -16,6 +23,9 @@ def plot_pytorch_tensor_images(images: torch.Tensor, title: str,
     -------
     None
     """
+
+    if not WITH_TORCH:
+        
 
     plt.figure()
     plt.title(title)
