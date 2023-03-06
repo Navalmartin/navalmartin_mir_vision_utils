@@ -4,7 +4,7 @@ requires = ["hatchling", "torch", "torchvision", "numpy",
 build-backend = "hatchling.build"
 [project]
 name = "navalmartin_mir_vision_utils"
-version = "0.0.6"
+version = "0.0.7"
 authors = [
   { name="Alexandros Giavaras", email="a.giavaras@gmail.com" },
 ]
