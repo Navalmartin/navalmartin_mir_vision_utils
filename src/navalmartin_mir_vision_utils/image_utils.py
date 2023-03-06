@@ -14,7 +14,7 @@ import numpy as np
 from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
 from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLoadersEnumType,
                                                       IMAGE_LOADERS_TYPES_STR, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
-from navalmartin_mir_vision_utils.io.file_utils import ERROR
+from navalmartin_mir_vision_utils.mir_vison_io.file_utils import ERROR
 
 
 def is_valid_pil_image_from_bytes_string(image_byte_string: str) -> Image:
