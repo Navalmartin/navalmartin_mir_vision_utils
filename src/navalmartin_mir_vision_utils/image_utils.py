@@ -17,7 +17,7 @@ from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLo
 from navalmartin_mir_vision_utils.mir_vison_io.file_utils import ERROR
 
 
-def is_valid_pil_image_from_bytes_string(image_byte_string: str) -> Image:
+def is_valid_pil_image_from_bytes_string(image_byte_string: bytes, open_if_verify_succcess: bool = True) -> Image:
     """Check if the provided bytes correspond to a valid
     PIL.Image. If IOError or  SyntaxError is raised it returns None
 
@@ -33,6 +33,11 @@ def is_valid_pil_image_from_bytes_string(image_byte_string: str) -> Image:
     try:
         image = Image.open(BytesIO(image_byte_string))
         image.verify()
+        # we need to reopen after verify
+        # see this:
+        # https://stackoverflow.com/questions/3385561/python-pil-load-throwing-attributeerror-nonetype-object-has-no-attribute-rea
+        if open_if_verify_succcess:
+            image = Image.open(BytesIO(image_byte_string))
         return image
     except (IOError, SyntaxError) as e:
         print(f"{ERROR} the image_byte_string is corrupted")
@@ -77,8 +82,6 @@ def get_pil_image_size(image: Image) -> tuple:
         raise ValueError("The provided image is None")
 
     return image.size
-
-
 
 
 def list_image_files(base_path: Path,
@@ -134,7 +137,7 @@ def get_img_files(base_path: Path,
 
     Parameters
     ----------
-    img_dir: The image directory
+    base_path: The image directory
     img_formats: The image formats
 
     Returns
@@ -165,7 +168,7 @@ def remove_metadata_from_image(image: Image, new_filename: Path) -> None:
     image_without_exif.save(new_filename)
 
 
-def delete_image_if(img_path: Path, size: tuple, direction: str) -> None:
+def delete_image_if(image: Image, size: tuple, direction: str) -> None:
     """Delete the image specified in the path that its file does not
     satisfy the direction. Direction can be any of the following:
     - >_both: Both coordinates are greater than
@@ -180,7 +183,8 @@ def delete_image_if(img_path: Path, size: tuple, direction: str) -> None:
 
     Parameters
     ----------
-    img_path
+    direction
+    image
     size
 
     Returns
@@ -188,10 +192,8 @@ def delete_image_if(img_path: Path, size: tuple, direction: str) -> None:
 
     """
 
-    img = load_img(path=img_path, loader='PIL')
-
-    img_size_width = img.width
-    img_size_height = img.height
+    img_size_width = image.width
+    img_size_height = image.height
 
     if direction == ">_any" or direction == "<_any":
 
@@ -199,8 +201,7 @@ def delete_image_if(img_path: Path, size: tuple, direction: str) -> None:
                 img_size_width > size[0] or \
                 img_size_height < size[1] or \
                 img_size_width > size[1]:
-            del img
-            os.remove(path=img_path)
+            os.remove(path=image.filename)
     else:
         raise ValueError(f"Direction {direction} not implemented")
 
@@ -252,6 +253,9 @@ def show_pil_image(image: Image) -> None:
     -------
 
     """
+
+    if image is None:
+        raise ValueError("The provided image is None")
 
     image.show()
 

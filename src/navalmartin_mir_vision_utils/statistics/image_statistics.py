@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 import numpy as np
 from PIL import Image
 from PIL.ImageStat import Stat
@@ -42,6 +42,38 @@ def compute_image_channels_variance(image: Image) -> List[float]:
 def compute_image_channels_median(image: Image) -> List[float]:
     stats = Stat(image_or_list=image)
     return stats.median
+
+
+def fit_gaussian_distribution_on_image(image: Image) -> List[Dict]:
+    """Fits a gaussian distribution on every channel of the
+    image. Returns a list of tuples the mean and standard deviation of the resulting
+    distribution
+
+    Parameters
+    ----------
+    image: The image to fit
+
+    Returns
+    -------
+
+    """
+    # see also this post:
+    # https://stackoverflow.com/questions/52962969/number-of-channels-in-pil-pillow-image?rq=1
+    channels = image.getbands()
+
+    if len(channels) == 3:
+
+        # split the channels
+        r, g, b = image.split()
+
+        red_channel = fit_gaussian_distribution(data=r)
+        green_channel = fit_gaussian_distribution(data=g)
+        blue_channel = fit_gaussian_distribution(data=b)
+
+        return [{'green': green_channel, 'red': red_channel, 'blue': blue_channel}]
+    else:
+        raise NotImplementedError("For len(channels) != 3 "
+                                  "fit_gaussian_distribution_on_image is not implemented")
 
 
 def fit_gaussian_distribution(data: List[float]) -> List[float]:

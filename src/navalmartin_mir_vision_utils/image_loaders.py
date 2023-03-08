@@ -1,10 +1,14 @@
-        
+import numpy as np
 from PIL import Image
 from pathlib import Path
 from typing import Callable, List, Union, TypeVar
+from io import BytesIO
 
-from navalmartin_mir_vision_utils import WITH_TORCH, TorchTensor
-from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
+from navalmartin_mir_vision_utils import get_img_files
+
+from navalmartin_mir_vision_utils.mir_vision_config import WITH_TORCH, WITH_CV2
+from navalmartin_mir_vision_utils.mir_vision_types import TorchTensor
+from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode, InvalidConfiguration
 from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLoadersEnumType,
                                                       IMAGE_LOADERS_TYPES_STR, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
 from navalmartin_mir_vision_utils.mir_vison_io.file_utils import ERROR
@@ -14,6 +18,9 @@ if WITH_TORCH:
     import torchvision
     from torchvision import transforms
 
+
+if WITH_CV2:
+    import cv2
 
 
 def load_img(path: Path, transformer: Callable = None,
@@ -39,13 +46,57 @@ def load_img(path: Path, transformer: Callable = None,
 
     if loader == ImageLoadersEnumType.PIL:
         return load_image_as_pillow(path=path, transformer=transformer)
-    elif loader == ImageLoadersEnumType.CV2:
-        return load_image_cv2(path=path, transformer=transformer)
-    elif loader == ImageLoadersEnumType.PIL_NUMPY:
+
+    if loader == ImageLoadersEnumType.PIL_NUMPY:
         return load_image_as_numpy(path=path, transformer=transformer)
-    elif loader == ImageLoadersEnumType.PYTORCH_TENSOR:
-        return load_image_pytorch_tensor(path=path, transformer=transformer)
-    
+
+    if loader == ImageLoadersEnumType.CV2:
+        if WITH_CV2:
+            return load_image_cv2(path=path, transformer=transformer)
+        else:
+            raise InvalidConfiguration(message="opencv-python was not found. Cannot import cv2")
+
+    if loader == ImageLoadersEnumType.PYTORCH_TENSOR:
+        if WITH_TORCH:
+            return load_image_pytorch_tensor(path=path, transformer=transformer)
+        else:
+            raise InvalidConfiguration(message="PyTorch was not found.")
+
+    return None
+
+
+def load_pil_image_from_byte_string(image_byte_string: bytes,
+                                    open_if_verify_success: bool = True) -> Image:
+    """Loads a PIL.Image from the given byte string
+
+    Parameters
+    ----------
+    image_byte_string: The byte string representing the image
+    open_if_verify_success: Whether to reopen the Image after image.verify()
+    is called
+
+    Returns
+    -------
+
+    An instance of PIL.Image
+    """
+    try:
+        image = Image.open(BytesIO(image_byte_string))
+        image.verify()
+
+        # we need to reopen after verify
+        # see this:
+        # https://stackoverflow.com/questions/3385561/python-pil-load-throwing-attributeerror-nonetype-object-has-no-attribute-rea
+        if open_if_verify_success:
+            image = Image.open(BytesIO(image_byte_string))
+
+        return image
+    except (IOError, SyntaxError) as e:
+        print(f"{ERROR} the image_byte_string is corrupted")
+        print(f"Exception message {str(e)}")
+        return None
+
+
 def load_images(path: Path, transformer: Callable = None,
                 loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
                 img_formats: tuple = IMAGE_STR_TYPES) -> List:
@@ -64,7 +115,7 @@ def load_images(path: Path, transformer: Callable = None,
     """
 
     # get all the image files
-    img_files = get_img_files(img_dir=path, img_formats=img_formats)
+    img_files = get_img_files(base_path=path, img_formats=img_formats)
 
     if len(img_files) == 0:
         raise ValueError(f"{path} does  not have images with formats {img_formats}")
@@ -93,6 +144,7 @@ def load_images_from_paths(imgs: List[Path], transformer: Callable,
 
     return imgs_data  
 
+
 def load_image_as_pillow(path: Path, transformer: Callable = None) -> Image:
     """Load the image in the specified path as Pillow.Image object
 
@@ -118,8 +170,10 @@ def load_image_as_numpy(path: Path, transformer: Callable = None) -> np.array:
         x = transformer(x)
     return np.array(x)
 
+
 def load_image_cv2(path: Path, transformer: Callable = None):
-    """Load an image as OpenCV matrix
+    """Load an image as OpenCV matrix. If WITH_CV2 is False
+    throws InvalidConfiguration
 
     Parameters
     ----------
@@ -131,22 +185,21 @@ def load_image_cv2(path: Path, transformer: Callable = None):
     OpenCV image matrix
     """
 
-    try:
-        import cv2
-        image = cv2.imread(str(path))
+    if not WITH_CV2:
+        print("opencv-python is not installed.")
+        raise InvalidConfiguration(message="opencv-python is not installed.")
 
-        if transformer is not None:
-            image = transformer(image)
-    except ModuleNotFoundError as e:
-        print(f"An exception was raised in load_image_cv2. Message {str(e)}")
-        print(f"navalmartin-mir-vision-utils has not been set up with OpenCV suppert")
-        return None
+    image = cv2.imread(str(path))
+
+    if transformer is not None:
+        image = transformer(image)
 
     return image
 
 
 def load_image_pytorch_tensor(path: Path, transformer: Callable = None) -> TorchTensor:
-    """Load the image from the specified path
+    """Load the image from the specified path.  If WITH_TORCH is False
+    throws InvalidConfiguration
 
     Parameters
     ----------
@@ -161,7 +214,7 @@ def load_image_pytorch_tensor(path: Path, transformer: Callable = None) -> Torch
 
     if not WITH_TORCH:
         print("PyTorch is not installed.")
-        return None
+        raise InvalidConfiguration(message="PyTorch is not installed.")
 
     with Image.open(path) as image:
 
@@ -178,17 +231,17 @@ def load_image_pytorch_tensor(path: Path, transformer: Callable = None) -> Torch
         transform_to_torch = transforms.Compose([transforms.ToTensor()])
         return transform_to_torch(x)
    
-        
-    
+
 def load_images_as_torch(x: List[Path], y_train: List[int],
-                         transformer: transforms.Compose) -> tuple:
+                         transformer: Callable) -> tuple:
     """Load the images in the path as torch tensors
 
     Parameters
     ----------
     x: A list of image files
     y_train: The lebels associated with evey image
-    transformer: Transform to apply when loading the images
+    transformer: Transform to apply when loading the images.
+    Usually this will be transforms.Compose
 
     Returns
     -------
@@ -196,7 +249,8 @@ def load_images_as_torch(x: List[Path], y_train: List[int],
     """
 
     if not WITH_TORCH:
-        print("PyTorch is not installed.")
+        print("load_image_pytorch_tensor is not available as PyTorch was not found.")
+        raise
         return None
 
     data = [load_img(img_path, transformer) for img_path in x]
