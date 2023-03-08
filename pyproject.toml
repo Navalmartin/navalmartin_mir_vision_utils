@@ -1,10 +1,9 @@
 [build-system]
-requires = ["hatchling", "torch", "torchvision", "numpy",
-            "Pillow", "scipy", "scikit-image", "libsvm"]
+requires = ["hatchling", "numpy", "Pillow", "scipy", "scikit-image", "libsvm"]
 build-backend = "hatchling.build"
 [project]
 name = "navalmartin_mir_vision_utils"
-version = "0.0.11"
+version = "0.0.12"
 authors = [
   { name="Alexandros Giavaras", email="a.giavaras@gmail.com" },
 ]
