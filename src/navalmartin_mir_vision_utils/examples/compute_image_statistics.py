@@ -1,5 +1,4 @@
 from pathlib import Path
-import numpy as np
 from navalmartin_mir_vision_utils import load_img, ImageLoadersEnumType
 from navalmartin_mir_vision_utils.statistics import compute_image_statistics, fit_gaussian_distribution_on_image
 
