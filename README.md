@@ -22,8 +22,11 @@ The general dependencies are:
 
 In addition, utilities for working to PyTorch and OpenCV exists but 
 you need to install these dependencies yourself. The ```mir_vision_config``` 
-provides the ```WITH_TORCH``` and ```WITH_CV2``` flags 
-to denote whether PyTorch and opencv-python are installed on your system. 
+provides various configuration flags to customize the API. These are
+
+- ```WITH_TORCH``` 
+- ```WITH_CV2``` 
+- ```WITH_SKIMAGE_VERSION```
 
 ## Installation
 
@@ -117,3 +120,37 @@ if __name__ == '__main__':
     channels_fit = fit_gaussian_distribution_on_image(image=image)
     print(f"Gaussian distribution channel fit: {channels_fit}")
 ```
+
+### Compute image quality calculation
+
+Currently, only the BRISQUE algorithm is supported. The implementation
+from https://github.com/ocampor/image-quality has been integrated into the 
+utilities.
+
+```
+from pathlib import Path
+
+from navalmartin_mir_vision_utils import load_img, ImageLoadersEnumType
+from navalmartin_mir_vision_utils.image_quality import brisque
+
+if __name__ == '__main__':
+    image_path = Path("/home/alex/qi3/mir-engine/datasets/cracks_v_3_id_8/train/cracked/img_9_9.jpg")
+    image = load_img(path=image_path, loader=ImageLoadersEnumType.PIL)
+    brisque_score = brisque.score(image)
+    print(brisque_score)
+```
+
+### Issues
+
+- ```rescale() got an unexpected keyword argument 'multichannel'```
+
+This issue may be related to the version of the skimage package you have installed. You can check
+with version is installed on your system by using
+
+```
+import skimage
+print(skimage.__version__)
+
+```
+
+or use the variable ```WITH_SKIMAGE_VERSION``` in ```mir_vision_config```. 
