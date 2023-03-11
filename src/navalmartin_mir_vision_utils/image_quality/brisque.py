@@ -20,6 +20,7 @@ from navalmartin_mir_vision_utils.statistics.distributions.asymmetric_generalize
 from navalmartin_mir_vision_utils.statistics.statistics_utils import gaussian_kernel2d
 from navalmartin_mir_vision_utils.image_transformers import pil2ndarray
 from navalmartin_mir_vision_utils.image_quality.models import MODELS_PATH
+from navalmartin_mir_vision_utils.mir_vision_config import WITH_SKIMAGE_VERSION
 
 VALID_BRISQUE_IMAGE_FORMATS = ['JPG', 'JPEG']
 
@@ -144,14 +145,25 @@ def calculate_features(image: PIL.Image, kernel_size, sigma) -> numpy.ndarray:
     #    Fix this warning error in version of scikit-image 0.16.0.
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        downscaled_image = skimage.transform.rescale(
-            brisque.image,
-            1 / 2,
-            order=2,
-            mode="constant",
-            anti_aliasing=False,
-            multichannel=False,
-        )
+
+        if WITH_SKIMAGE_VERSION == "0.19.3":
+            downscaled_image = skimage.transform.rescale(
+                brisque.image,
+                1 / 2,
+                order=2,
+                mode="constant",
+                anti_aliasing=False,
+                multichannel=False,
+            )
+        else:
+            downscaled_image = skimage.transform.rescale(
+                brisque.image,
+                1 / 2,
+                order=2,
+                mode="constant",
+                anti_aliasing=False,
+            )
+
     downscaled_brisque = Brisque(downscaled_image, kernel_size=kernel_size, sigma=sigma)
     features = numpy.concatenate([brisque.features, downscaled_brisque.features])
     scaled_features = scale_features(features)
@@ -188,6 +200,8 @@ def score(image: PIL.Image.Image, kernel_size=7, sigma=7 / 6) -> float:
 
     if image.format not in VALID_BRISQUE_IMAGE_FORMATS:
         raise ValueError(f"Current image format {image.format} is not in {VALID_BRISQUE_IMAGE_FORMATS}")
+
+    print(f"INFO: Using {WITH_SKIMAGE_VERSION} version of skimage")
 
     scaled_features = calculate_features(image, kernel_size, sigma)
     return predict(scaled_features)

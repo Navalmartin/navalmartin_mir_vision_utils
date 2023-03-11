@@ -1,4 +1,6 @@
+import skimage
 
+WITH_SKIMAGE_VERSION = skimage.__version__
 WITH_TORCH = False
 WITH_CV2 = False
 
