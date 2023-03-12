@@ -6,6 +6,7 @@ import csv
 import pickle
 import datetime
 import shutil
+import hashlib
 import uuid
 
 INFO = "INFO: "
@@ -41,6 +42,33 @@ def has_suffix(filename: Union[Path, str], suffixes: List[str]) -> bool:
     return False
 
 
+def get_md5_checksum(file: Union[Path, bytes]):
+    """Returns the MD5 checksum of the file
+    in the given path. Implementation taken from:
+    https://stackoverflow.com/questions/16874598/how-do-i-calculate-the-md5-checksum-of-a-file-in-python
+
+    Parameters
+    ----------
+    filename
+
+    Returns
+    -------
+
+    """
+
+    if isinstance(file, Path):
+        # Open,close, read file and calculate MD5 on its contents
+        with open(file, 'rb') as file_to_check:
+            # read contents of the file
+            data = file_to_check.read()
+            # pipe contents of the file through
+            md5_returned = hashlib.md5(data).hexdigest()
+            return md5_returned
+    elif isinstance(file, bytes):
+        #md5_returned = hashlib.md5(file).hexdigest()
+        return sum(file)
+    else:
+        raise ValueError("Invalid 'file' type. 'file' must be either Path of bytes")
 
 
 
