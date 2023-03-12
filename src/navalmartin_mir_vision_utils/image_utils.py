@@ -17,12 +17,14 @@ from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLo
 from navalmartin_mir_vision_utils.mir_vison_io.file_utils import ERROR
 
 
-def is_valid_pil_image_from_bytes_string(image_byte_string: bytes, open_if_verify_succcess: bool = True) -> Image:
+def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
+                                         open_if_verify_succcess: bool = True) -> Image:
     """Check if the provided bytes correspond to a valid
     PIL.Image. If IOError or  SyntaxError is raised it returns None
 
     Parameters
     ----------
+    open_if_verify_succcess
     image_byte_string: The string bytes that correspond to an image
 
     Returns
@@ -45,11 +47,12 @@ def is_valid_pil_image_from_bytes_string(image_byte_string: bytes, open_if_verif
         return None
 
 
-def is_valid_pil_image_file(image: Path) -> Image:
+def is_valid_pil_image_file(image: Path, open_if_verify_succcess: bool = True) -> Image:
     """Check if the given image is a valid Pillow image
 
     Parameters
     ----------
+    open_if_verify_succcess
     image: The image filename
 
     Returns
@@ -60,6 +63,8 @@ def is_valid_pil_image_file(image: Path) -> Image:
     try:
         img = Image.open(image)
         img.verify()
+        if open_if_verify_succcess:
+            img = Image.open(image)
         return img
     except (IOError, SyntaxError) as e:
         print(f"{ERROR} the file {image} is corrupted")

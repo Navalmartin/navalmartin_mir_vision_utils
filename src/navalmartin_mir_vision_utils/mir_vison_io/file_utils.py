@@ -42,7 +42,7 @@ def has_suffix(filename: Union[Path, str], suffixes: List[str]) -> bool:
     return False
 
 
-def get_md5_checksum(file: Union[Path, bytes]):
+def get_md5_checksum(file: Union[Path, str, bytes]):
     """Returns the MD5 checksum of the file
     in the given path. Implementation taken from:
     https://stackoverflow.com/questions/16874598/how-do-i-calculate-the-md5-checksum-of-a-file-in-python
@@ -65,11 +65,13 @@ def get_md5_checksum(file: Union[Path, bytes]):
             md5_returned = hashlib.md5(data).hexdigest()
             return md5_returned
     elif isinstance(file, bytes):
-        #md5_returned = hashlib.md5(file).hexdigest()
-        return sum(file)
+        md5_returned = hashlib.md5(file).hexdigest()
+        return md5_returned
+    elif isinstance(file, str):
+        md5_returned = hashlib.md5(file).hexdigest()
+        return md5_returned
     else:
         raise ValueError("Invalid 'file' type. 'file' must be either Path of bytes")
-
 
 
 def read_json(filename: Path) -> dict:

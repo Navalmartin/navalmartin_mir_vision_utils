@@ -25,8 +25,5 @@ if __name__ == '__main__':
     image_checksum = get_md5_checksum(file=image_file)
     print(f"Calculated MD5 checksum {image_checksum}")
 
-    # make the image into bytes
-    #image_bytes = pil_image_to_bytes_string(image=image)
-    image_bytes = image.tobytes("hex", "rgb")
-    image_checksum = get_md5_checksum(file=image_bytes)
+    image_checksum = get_md5_checksum(file=image.tobytes())
     print(f"Calculated MD5 checksum {image_checksum}")
