@@ -18,13 +18,13 @@ from navalmartin_mir_vision_utils.mir_vison_io.file_utils import ERROR
 
 
 def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
-                                         open_if_verify_succcess: bool = True) -> Image:
+                                         open_if_verify_success: bool = True) -> Image:
     """Check if the provided bytes correspond to a valid
     PIL.Image. If IOError or  SyntaxError is raised it returns None
 
     Parameters
     ----------
-    open_if_verify_succcess
+    open_if_verify_success
     image_byte_string: The string bytes that correspond to an image
 
     Returns
@@ -38,7 +38,7 @@ def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
         # we need to reopen after verify
         # see this:
         # https://stackoverflow.com/questions/3385561/python-pil-load-throwing-attributeerror-nonetype-object-has-no-attribute-rea
-        if open_if_verify_succcess:
+        if open_if_verify_success:
             image = Image.open(BytesIO(image_byte_string))
         return image
     except (IOError, SyntaxError) as e:

@@ -13,3 +13,11 @@ class InvalidConfiguration(Exception):
 
     def __str__(self) -> str:
         return self.message
+
+
+class InvalidImageFile(Exception):
+    def __init__(self, filename: str):
+        self.message = f"File {filename} is not a valid image file"
+
+    def __str__(self) -> str:
+        return self.message
