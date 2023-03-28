@@ -22,7 +22,7 @@ from navalmartin_mir_vision_utils.image_transformers import pil2ndarray
 from navalmartin_mir_vision_utils.image_quality.models import MODELS_PATH
 from navalmartin_mir_vision_utils.mir_vision_config import WITH_SKIMAGE_VERSION
 
-VALID_BRISQUE_IMAGE_FORMATS = ['JPG', 'JPEG']
+VALID_BRISQUE_IMAGE_FORMATS = ['JPG', 'JPEG', 'PNG', 'MPO']
 
 with open(os.path.join(MODELS_PATH, "normalize.pickle"), "rb") as file:
     scale_parameters = pickle.load(file)
@@ -54,6 +54,8 @@ class Brisque:
 
         if self.image.shape[-1] == 3:
             self.image = skimage.color.rgb2gray(self.image)
+        elif self.image.shape[-1] == 4:
+            self.image = skimage.color.rgb2gray(skimage.color.rgba2rgb(self.image))
 
         self.kernel_size = kernel_size
         self.sigma = sigma
