@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 
-from navalmartin_mir_vision_utils import WITH_TORCH, TorchTensor
+from navalmartin_mir_vision_utils.mir_vision_config import WITH_TORCH
+from navalmartin_mir_vision_utils import TorchTensor
 
 if WITH_TORCH:
     import torch
