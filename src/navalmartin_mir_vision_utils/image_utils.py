@@ -10,7 +10,6 @@ from PIL import Image
 
 import numpy as np
 
-
 from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
 from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLoadersEnumType,
                                                       IMAGE_LOADERS_TYPES_STR, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
@@ -90,7 +89,7 @@ def get_pil_image_size(image: Image) -> tuple:
 
 
 def list_image_files(base_path: Path,
-                     valid_exts: Union[List , tuple] = IMAGE_STR_TYPES,
+                     valid_exts: Union[List, tuple] = IMAGE_STR_TYPES,
                      contains: str = None) -> Path:
     """Generator that returns all the images in the given
     base_path
@@ -136,7 +135,7 @@ def list_image_files(base_path: Path,
 
 
 def get_img_files(base_path: Path,
-                  img_formats: Union[List , tuple] = IMAGE_STR_TYPES) -> List[Path]:
+                  img_formats: Union[List, tuple] = IMAGE_STR_TYPES) -> List[Path]:
     """Get the image files in the given image directory that have
     the specified image format.
 
@@ -171,6 +170,38 @@ def remove_metadata_from_image(image: Image, new_filename: Path) -> None:
     image_without_exif = Image.new(image.mode, image.size)
     image_without_exif.putdata(data)
     image_without_exif.save(new_filename)
+
+
+def create_thumbnail_from_pil_image(max_size: tuple,
+                                    image_filename: Path = None,
+                                    image: Image = None) -> Image:
+    """Create a thumbnail from the given image filename or the
+    given image. If both are None it raises ValueError.
+    If image_filename is not None it opens the image
+    specified from the file and verifies its integrity.
+    If image is not None it creates a thumbnail inplace
+
+    Parameters
+    ----------
+    max_size: The max siz of the thumbnail
+    image_filename: Image filename to read the image
+    image: An Image instance
+
+    Returns
+    -------
+    An instance of Image class
+    """
+    if image_filename is not None:
+        image_thub = is_valid_pil_image_file(image=image_filename,
+                                             open_if_verify_succcess=True)
+
+        image_thub.thumbnail(max_size)
+        return image_thub
+    elif image is not None:
+        image.thumbnail(max_size)
+        return image
+
+    raise ValueError("Both image_filename and image are None")
 
 
 def delete_image_if(image: Image, size: tuple, direction: str) -> None:
