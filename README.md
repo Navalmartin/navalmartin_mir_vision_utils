@@ -161,6 +161,33 @@ if __name__ == '__main__':
     print(brisque_score)
 ```
 
+
+
+or use the variable ```WITH_SKIMAGE_VERSION``` in ```mir_vision_config```.
+
+
+### Play video
+
+```
+from navalmartin_mir_vision_utils.mir_vision_config import WITH_CV2
+
+if WITH_CV2:
+
+    import cv2
+else:
+    raise NotImplementedError("Example requires OpenCV support but this was not detected.")
+
+from navalmartin_mir_vision_utils.video_utils.utils import play_video
+
+
+if __name__ == '__main__':
+
+    # get the camera with id = 0
+    camera = cv2.VideoCapture(0)
+
+    play_video(camera=camera)
+```
+
 ### Issues
 
 - ```rescale() got an unexpected keyword argument 'multichannel'```
@@ -169,9 +196,8 @@ This issue may be related to the version of the skimage package you have install
 with version is installed on your system by using
 
 ```
+
 import skimage
 print(skimage.__version__)
 
 ```
-
-or use the variable ```WITH_SKIMAGE_VERSION``` in ```mir_vision_config```. 
