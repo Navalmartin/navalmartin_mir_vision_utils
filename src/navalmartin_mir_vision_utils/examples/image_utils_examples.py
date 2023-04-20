@@ -5,7 +5,7 @@ from navalmartin_mir_vision_utils import (is_valid_pil_image_file,
                                           pil_image_to_bytes_string,
                                           create_thumbnail_from_pil_image)
 
-from navalmartin_mir_vision_utils.mir_vison_io import get_md5_checksum
+from navalmartin_mir_vision_utils.mir_vision_io import get_md5_checksum
 
 if __name__ == '__main__':
 

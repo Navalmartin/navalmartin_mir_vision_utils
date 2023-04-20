@@ -13,7 +13,7 @@ import numpy as np
 from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
 from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLoadersEnumType,
                                                       IMAGE_LOADERS_TYPES_STR, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
-from navalmartin_mir_vision_utils.mir_vison_io.file_utils import ERROR
+from navalmartin_mir_vision_utils.mir_vision_io.file_utils import ERROR
 
 
 def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
@@ -46,12 +46,12 @@ def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
         return None
 
 
-def is_valid_pil_image_file(image: Path, open_if_verify_succcess: bool = True) -> Image:
+def is_valid_pil_image_file(image: Path, open_if_verify_success: bool = True) -> Image:
     """Check if the given image is a valid Pillow image
 
     Parameters
     ----------
-    open_if_verify_succcess
+    open_if_verify_success
     image: The image filename
 
     Returns
@@ -62,7 +62,7 @@ def is_valid_pil_image_file(image: Path, open_if_verify_succcess: bool = True) -
     try:
         img = Image.open(image)
         img.verify()
-        if open_if_verify_succcess:
+        if open_if_verify_success:
             img = Image.open(image)
         return img
     except (IOError, SyntaxError) as e:

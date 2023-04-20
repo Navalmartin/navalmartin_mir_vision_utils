@@ -10,7 +10,7 @@ from .image_utils import (is_valid_pil_image_from_bytes_string,
                           get_img_files,
                           get_pil_image_size,
                           create_thumbnail_from_pil_image)
-from .image_loaders import load_img
+from .image_loaders import load_img, load_images, get_img_files
 from .image_transformers import pil2ndarray, pil_image_to_bytes_string
 from .image_enums import (ImageFileEnumType,
                           IMAGE_STR_TYPES,
