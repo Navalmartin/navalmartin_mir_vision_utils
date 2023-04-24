@@ -1,19 +1,17 @@
 import unittest
 from pathlib import Path
-
-from src.navalmartin_mir_vision_utils.image_enums import ImageLoadersEnumType
-from src.navalmartin_mir_vision_utils.image_utils import load_img
-from src.navalmartin_mir_vision_utils.image_quality.brisque import score
+from navalmartin_mir_vision_utils.mir_vision_io.file_utils import rename_files_with_counter
 
 
 class TestBrisqueImageQuality(unittest.TestCase):
 
-    def test_get_img_files(self):
-        image = load_img(path=Path('/home/alex/qi3/mir_vision_utils/test_data/img_18_3.jpg'),
-                         loader=ImageLoadersEnumType.PIL,
-                         transformer=None)
+    def test_rename_files_with_counter(self):
+        rename_files_with_counter(base_path_src=Path("./test_data"),
+                                  base_path_dist=Path("./test_data/copy_rename_images"),
+                                  file_formats=["png"])
 
-        score(image=image)
+
+
 
 
 if __name__ == '__main__':

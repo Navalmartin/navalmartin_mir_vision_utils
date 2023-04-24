@@ -9,10 +9,6 @@ import shutil
 import hashlib
 import uuid
 
-INFO = "INFO: "
-WARNING = "WARNING: "
-ERROR = "ERROR: "
-
 
 def has_suffix(filename: Union[Path, str], suffixes: List[str]) -> bool:
     """Assumes that the filename path givens has a structure
@@ -250,6 +246,36 @@ def rename_file(src: Path, dst: Path):
     os.rename(src=src, dst=dst)
 
 
+def rename_files_with_counter(base_path_src: Path,
+                              base_path_dist: Path,
+                              common_filename: str,
+                              file_formats: List[str] = [],
+                              start_counter: int = 0) -> None:
+
+    def _do_name(filename: Path, counter: int) -> None:
+        filename_, file_extension = os.path.splitext(filename)
+
+        dst_name = common_filename + str(counter) + f"{file_extension}"
+        dst = base_path_dist / dst_name
+        copy_file_from_to(source=filename, dst=dst)
+        counter += 1
+
+    filenames = get_all_files(dir_path=base_path_src,
+                              file_formats=file_formats, skip_dirs=True)
+
+    counter = start_counter
+    if len(file_formats) != 0:
+        for filename in filenames:
+
+            if has_suffix(filename=filename, suffixes=file_formats):
+                _do_name(filename=filename, counter=counter)
+                counter += 1
+    else:
+        for filename in filenames:
+            _do_name(filename=filename, counter=counter)
+            counter += 1
+
+
 def compare_dirs(dir_path_1: Path, dir_path_2: Path,
                  ignore_suffixes: bool,
                  sort_contents: bool = True) -> None:
@@ -304,6 +330,7 @@ def get_all_files(dir_path: Path, file_formats: List[str],
 
     Parameters
     ----------
+    dir_path
     with_batch_structure: Flag indicating that the given path is structured
     with subdirectories
     img_dir: The image directory
@@ -325,19 +352,22 @@ def get_all_files(dir_path: Path, file_formats: List[str],
     for filename in img_files:
         if os.path.isfile(dir_path / filename):
 
-            if filename.split(".")[-1].lower() in file_formats:
+            filename_, file_extension = os.path.splitext(filename)
+
+            if file_extension in file_formats:
                 files.append(dir_path / filename)
             else:
                 continue
 
         elif with_batch_structure:
             if os.path.isdir(dir_path / filename):
-                dir_img_files = os.listdir(dir_path / filename)
+                dir_files = os.listdir(dir_path / filename)
 
-                for img_filename in dir_img_files:
-                    if os.path.isfile(dir_path / filename / img_filename) and \
-                            img_filename.split(".")[-1].lower() in file_formats:
-                        files.append(dir_path / filename / img_filename)
+                for dir_filename in dir_files:
+                    if os.path.isfile(dir_path / filename / dir_filename):
+                        filename_, file_extension = os.path.splitext(dir_filename)
+                        if file_extension in file_formats:
+                            files.append(dir_path / filename / dir_filename)
         elif skip_dirs:
             continue
         else:

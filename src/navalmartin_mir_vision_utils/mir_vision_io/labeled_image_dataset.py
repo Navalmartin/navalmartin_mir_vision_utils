@@ -6,7 +6,9 @@ import random
 from pathlib import Path
 from typing import List, Any, Callable
 
-from navalmartin_mir_vision_utils import get_img_files, load_img, ImageLoadersEnumType, IMAGE_STR_TYPES
+from navalmartin_mir_vision_utils.image_utils import get_img_files
+from navalmartin_mir_vision_utils.image_loaders import load_img
+from navalmartin_mir_vision_utils.image_enums import (ImageLoadersEnumType, IMAGE_STR_TYPES)
 
 
 class LabeledImageDataset(object):
