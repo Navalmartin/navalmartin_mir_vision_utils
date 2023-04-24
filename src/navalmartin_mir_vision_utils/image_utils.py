@@ -2,18 +2,16 @@
 
 """
 import os
-import shutil
-from pathlib import Path
 from io import BytesIO
-from typing import Callable, List, Union, TypeVar
+from pathlib import Path
+from typing import List, Union
+
 from PIL import Image
 
-import numpy as np
-
 from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
-from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLoadersEnumType,
-                                                      IMAGE_LOADERS_TYPES_STR, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
-from navalmartin_mir_vision_utils.mir_vison_io.file_utils import ERROR
+from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
+from navalmartin_mir_vision_utils.utils.messages import ERROR
+from navalmartin_mir_vision_utils.mir_vision_config import WITH_CV2
 
 
 def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
@@ -46,12 +44,12 @@ def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
         return None
 
 
-def is_valid_pil_image_file(image: Path, open_if_verify_succcess: bool = True) -> Image:
+def is_valid_pil_image_file(image: Path, open_if_verify_success: bool = True) -> Image:
     """Check if the given image is a valid Pillow image
 
     Parameters
     ----------
-    open_if_verify_succcess
+    open_if_verify_success
     image: The image filename
 
     Returns
@@ -62,7 +60,7 @@ def is_valid_pil_image_file(image: Path, open_if_verify_succcess: bool = True) -
     try:
         img = Image.open(image)
         img.verify()
-        if open_if_verify_succcess:
+        if open_if_verify_success:
             img = Image.open(image)
         return img
     except (IOError, SyntaxError) as e:
@@ -193,7 +191,7 @@ def create_thumbnail_from_pil_image(max_size: tuple,
     """
     if image_filename is not None:
         image_thub = is_valid_pil_image_file(image=image_filename,
-                                             open_if_verify_succcess=True)
+                                             open_if_verify_success=True)
 
         image_thub.thumbnail(max_size)
         return image_thub
@@ -202,59 +200,6 @@ def create_thumbnail_from_pil_image(max_size: tuple,
         return image
 
     raise ValueError("Both image_filename and image are None")
-
-
-def delete_image_if(image: Image, size: tuple, direction: str) -> None:
-    """Delete the image specified in the path that its file does not
-    satisfy the direction. Direction can be any of the following:
-    - >_both: Both coordinates are greater than
-    - >_x: x coordinate is greater than
-    - >_y: y coordinate is greater than
-    - >_any: Any of the coordinates is less than
-    - <_both: Both coordinates are less than
-    - <_x: x coordinate is less than
-    - <_y: y coordinate is less than
-    - <_any: Any of the coordinates is less than
-
-
-    Parameters
-    ----------
-    direction
-    image
-    size
-
-    Returns
-    -------
-
-    """
-
-    img_size_width = image.width
-    img_size_height = image.height
-
-    if direction == ">_any" or direction == "<_any":
-
-        if img_size_width < size[0] or \
-                img_size_width > size[0] or \
-                img_size_height < size[1] or \
-                img_size_width > size[1]:
-            os.remove(path=image.filename)
-    else:
-        raise ValueError(f"Direction {direction} not implemented")
-
-
-def copy_img_from_to(source: Path, dst: Path) -> None:
-    """Copy the source image  to the dst image
-
-    Parameters
-    ----------
-    source: The source image
-    dst: The destination image
-
-    Returns
-    -------
-
-    """
-    shutil.copy(src=source, dst=dst)
 
 
 def save_img(image: Image, filename: Path, img_format: str = None) -> None:
@@ -336,3 +281,54 @@ def save_img_from_str(img_str: str, encoding: str,
     img = Image.frombytes(mode, (img_width, img_height), img_bytes, 'raw')
 
     img.save(fp=path, format=img_format)
+
+
+def chuckify_img(img: Path, chunk_size: tuple, output_dir: Path,
+                 create_output_dir: bool = False):
+    """Creates chuncks of the image in the given Path
+    and stores it in the given output directory
+    under the same name appended with the chuck counter
+
+    Parameters
+    ----------
+
+    img: The image path
+    chunk_size: The size of the chunck
+    output_dir: The output directory
+    create_output_dir: Flag indicating if the output directory should be created
+    Returns
+    -------
+
+    """
+
+    if not WITH_CV2:
+        raise NotImplementedError("The function chuckify_img requires OpenCV supprt. "
+                                  "But OpenCV is not detected")
+
+    import cv2
+
+    height = chunk_size[1]
+    width = chunk_size[0]
+
+    im = cv2.imread(str(img))
+    imgheight, imgwidth, channels = im.shape
+
+    file, ext = os.path.splitext(str(img))
+    file = file.split('/')[-1]
+
+    if os.listdir(output_dir/file):
+        pass
+    elif not os.listdir(output_dir/file) and create_output_dir == False:
+        raise ValueError("Specified output directory does not exist and cannot create it")
+    elif not os.listdir(output_dir/file) and create_output_dir:
+        os.mkdir(output_dir/file)
+
+    save_at = output_dir / file
+    counter = 0
+    for i in range(0, imgheight, height):
+        for j in range(0, imgwidth, width):
+            a = im[i:i + height, j:j + width]
+            filename = file + '_' + str(counter) + f'{ext}'
+            filename = save_at / filename
+            cv2.imwrite(str(filename), a)
+            counter += 1

@@ -8,10 +8,9 @@ from navalmartin_mir_vision_utils import get_img_files
 
 from navalmartin_mir_vision_utils.mir_vision_config import WITH_TORCH, WITH_CV2
 from navalmartin_mir_vision_utils.mir_vision_types import TorchTensor
-from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode, InvalidConfiguration
-from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, ImageLoadersEnumType,
-                                                      IMAGE_LOADERS_TYPES_STR, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
-from navalmartin_mir_vision_utils.mir_vison_io.file_utils import ERROR
+from navalmartin_mir_vision_utils.exceptions import InvalidConfiguration
+from navalmartin_mir_vision_utils.image_enums import (ImageLoadersEnumType, IMAGE_LOADERS_TYPES_STR, IMAGE_STR_TYPES)
+from navalmartin_mir_vision_utils.utils.messages import ERROR
 
 if WITH_TORCH:
     import torch
