@@ -1,7 +1,7 @@
 """
 Various utilities for working with images in the _mir_ project.
 """
-__version__ = "0.0.18"
+__version__ = "0.0.19"
 
 
 from .image_utils import (is_valid_pil_image_from_bytes_string,
