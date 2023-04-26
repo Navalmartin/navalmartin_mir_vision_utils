@@ -230,8 +230,22 @@ def copy_files_from_to(sources: List[Path], dsts: List[Path]):
         copy_file_from_to(source=src, dst=dist)
 
 
-def move_file_from_to(src: Path, dist: Path):
-    shutil.move(src=src, dst=dist)
+def copy_files_from_to_dir(sources: List[Path], dst_dir: Path, build_dst_dir: bool = True):
+    if not os.path.isdir(dst_dir) and not build_dst_dir:
+        raise ValueError("Destination directory does not exist and build_dst_dir is False."
+                         " Create destination directory or set build_dst_dir=True")
+
+    if not os.path.isdir(dst_dir):
+        os.makedirs(dst_dir)
+
+    for file in sources:
+        filename = file.name
+        new_dst = dst_dir / filename
+        copy_file_from_to(source=file, dst=new_dst)
+
+
+def move_file_from_to(source: Path, dst: Path):
+    shutil.move(src=source, dst=dst)
 
 
 def move_files_from_to(sources: List[Path], dsts: List[Path]):
@@ -239,7 +253,7 @@ def move_files_from_to(sources: List[Path], dsts: List[Path]):
         raise ValueError("Invalid size of sources and destinations")
 
     for src, dist in zip(sources, dsts):
-        move_file_from_to(src=src, dist=dist)
+        move_file_from_to(source=src, dst=dist)
 
 
 def rename_file(src: Path, dst: Path):
@@ -250,14 +264,19 @@ def rename_files_with_counter(base_path_src: Path,
                               base_path_dist: Path,
                               common_filename: str,
                               file_formats: List[str] = [],
-                              start_counter: int = 0) -> None:
+                              start_counter: int = 0,
+                              do_copy: bool = False) -> None:
 
-    def _do_name(filename: Path, counter: int) -> None:
+    def _do_name(filename: Path, counter: int, do_copy: bool) -> None:
         filename_, file_extension = os.path.splitext(filename)
 
         dst_name = common_filename + str(counter) + f"{file_extension}"
         dst = base_path_dist / dst_name
-        copy_file_from_to(source=filename, dst=dst)
+
+        if do_copy:
+            copy_file_from_to(source=filename, dst=dst)
+        else:
+            move_file_from_to(source=filename, dst=dst)
         counter += 1
 
     filenames = get_all_files(dir_path=base_path_src,
@@ -268,11 +287,11 @@ def rename_files_with_counter(base_path_src: Path,
         for filename in filenames:
 
             if has_suffix(filename=filename, suffixes=file_formats):
-                _do_name(filename=filename, counter=counter)
+                _do_name(filename=filename, counter=counter, do_copy=do_copy)
                 counter += 1
     else:
         for filename in filenames:
-            _do_name(filename=filename, counter=counter)
+            _do_name(filename=filename, counter=counter, do_copy=do_copy)
             counter += 1
 
 
