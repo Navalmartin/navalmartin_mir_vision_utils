@@ -12,6 +12,11 @@ from navalmartin_mir_vision_utils.image_enums import (ImageLoadersEnumType, IMAG
 
 
 class LabeledImageDataset(object):
+    """Simple class to load from a specified
+    directory images that are organised into
+    subdirectories that represent the labels
+
+    """
 
     def __init__(self, labels: List[Any], base_path: Path,
                  do_load: bool = True, *,
@@ -23,6 +28,7 @@ class LabeledImageDataset(object):
         self.base_path = base_path
         self.image_formats = image_formats
         self.images: List[tuple] = []
+        self._images_per_label = {}
         self._current_pos: int = -1
 
         if do_load:
@@ -59,6 +65,34 @@ class LabeledImageDataset(object):
 
         return self.images[key]
 
+    def __del__(self) -> None:
+        self.clean()
+
+    @property
+    def n_images_per_label(self) -> dict:
+        """Get a dictionary with the number of images
+        per label
+
+        Returns
+        -------
+
+        """
+        return self._images_per_label
+
+    def clean(self) -> None:
+        """Invalidate the dataset
+
+        Returns
+        -------
+
+        """
+        self.labels = []
+        self.base_path = None
+        self.image_formats = []
+        self.images = []
+        self._images_per_label = {}
+        self._current_pos: int = -1
+
     def shuffle(self) -> None:
         """Randomly shuffle  the contents of the dataset
 
@@ -84,4 +118,6 @@ class LabeledImageDataset(object):
                 label_images.append(load_img(path=img,
                                              transformer=transformer,
                                              loader=loader))
+
+            self._images_per_label[label] = len(label_images)
             self.images.extend(label_images)
