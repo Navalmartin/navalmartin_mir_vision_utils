@@ -129,7 +129,7 @@ def list_image_files(base_path: Path,
             if valid_exts is None or ext.endswith(valid_exts):
                 # construct the path to the image and yield it
                 image_path = os.path.join(rootDir, filename)
-                yield image_path
+                yield Path(image_path)
 
 
 def get_img_files(base_path: Path,

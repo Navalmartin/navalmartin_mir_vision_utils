@@ -112,8 +112,8 @@ class LabeledImageDataset(object):
 
             base_path = Path(str(self.base_path)) / label
             # get all the image files
-            img_files = get_img_files(base_path=base_path,
-                                      img_formats=self.image_formats)
+            img_files: List[Path] = get_img_files(base_path=base_path,
+                                                  img_formats=self.image_formats)
 
             label_images = []
             # load every image in the Path
