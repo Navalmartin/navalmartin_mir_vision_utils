@@ -5,6 +5,7 @@ wrapper to load a labeled image dataset
 import random
 from pathlib import Path
 from typing import List, Any, Callable
+import os
 
 from navalmartin_mir_vision_utils.image_utils import get_img_files
 from navalmartin_mir_vision_utils.image_loaders import load_img
@@ -105,6 +106,8 @@ class LabeledImageDataset(object):
     def load(self, loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
              transformer: Callable = None) -> None:
 
+        tmp_img_formats = []
+
         for label in self.labels:
 
             base_path = Path(str(self.base_path)) / label
@@ -115,9 +118,17 @@ class LabeledImageDataset(object):
             label_images = []
             # load every image in the Path
             for img in img_files:
+
+                suffix = img.suffix
+
+                if suffix.lower() not in tmp_img_formats:
+                    tmp_img_formats.append(suffix.lower())
+
                 label_images.append(load_img(path=img,
                                              transformer=transformer,
                                              loader=loader))
 
             self._images_per_label[label] = len(label_images)
             self.images.extend(label_images)
+
+            self.image_formats = tmp_img_formats
