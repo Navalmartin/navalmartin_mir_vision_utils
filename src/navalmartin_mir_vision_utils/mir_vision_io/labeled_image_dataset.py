@@ -19,16 +19,17 @@ class LabeledImageDataset(object):
 
     """
 
-    def __init__(self, labels: List[Any], base_path: Path,
+    def __init__(self, labels: List[tuple], base_path: Path,
                  do_load: bool = True, *,
                  image_formats: List[Any] = IMAGE_STR_TYPES,
                  loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
                  transformer: Callable = None):
 
-        self.labels = labels
+        self.labels: List[tuple] = labels
         self.base_path = base_path
         self.image_formats = image_formats
         self.images: List[tuple] = []
+        self.loader_type = loader
         self._images_per_label = {}
         self._current_pos: int = -1
 
@@ -55,7 +56,7 @@ class LabeledImageDataset(object):
             raise StopIteration
 
     def __getitem__(self, key: int) -> tuple:
-        """Returns the image, label pari  that corresponds to the given key
+        """Returns the image, label pair  that corresponds to the given key
         Parameters
         ----------
         key: The index of the image-label to retrieve
@@ -91,6 +92,7 @@ class LabeledImageDataset(object):
         self.base_path = None
         self.image_formats = []
         self.images = []
+        self.loader_type = None
         self._images_per_label = {}
         self._current_pos: int = -1
 
@@ -106,11 +108,15 @@ class LabeledImageDataset(object):
     def load(self, loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
              transformer: Callable = None) -> None:
 
+        self.loader_type = loader
         tmp_img_formats = []
 
         for label in self.labels:
 
-            base_path = Path(str(self.base_path)) / label
+            label_name = label[0]
+            label_idx = label[1]
+            base_path = Path(str(self.base_path)) / label_name
+
             # get all the image files
             img_files: List[Path] = get_img_files(base_path=base_path,
                                                   img_formats=self.image_formats)
@@ -126,7 +132,7 @@ class LabeledImageDataset(object):
 
                 label_images.append(load_img(path=img,
                                              transformer=transformer,
-                                             loader=loader))
+                                             loader=loader), label_idx)
 
             self._images_per_label[label] = len(label_images)
             self.images.extend(label_images)
