@@ -130,9 +130,9 @@ class LabeledImageDataset(object):
                 if suffix.lower() not in tmp_img_formats:
                     tmp_img_formats.append(suffix.lower())
 
-                label_images.append(load_img(path=img,
-                                             transformer=transformer,
-                                             loader=loader), label_idx)
+                label_images.append((load_img(path=img,
+                                              transformer=transformer,
+                                              loader=loader), label_idx))
 
             self._images_per_label[label] = len(label_images)
             self.images.extend(label_images)
