@@ -5,8 +5,9 @@ import os
 from io import BytesIO
 from pathlib import Path
 from typing import List, Union
-
+import matplotlib.pyplot as plt
 from PIL import Image
+
 
 from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
 from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
@@ -221,26 +222,6 @@ def save_img(image: Image, filename: Path, img_format: str = None) -> None:
         image.save(filename, format=img_format)
 
 
-def show_pil_image(image: Image) -> None:
-    """Show the image depending on the
-    type
-
-    Parameters
-    ----------
-    image
-    img: The image to show
-
-    Returns
-    -------
-
-    """
-
-    if image is None:
-        raise ValueError("The provided image is None")
-
-    image.show()
-
-
 def save_img_from_str(img_str: str, encoding: str,
                       img_format: str, path: Path,
                       img_height: int, img_width: int,
@@ -316,12 +297,12 @@ def chuckify_img(img: Path, chunk_size: tuple, output_dir: Path,
     file, ext = os.path.splitext(str(img))
     file = file.split('/')[-1]
 
-    if os.listdir(output_dir/file):
+    if os.listdir(output_dir / file):
         pass
-    elif not os.listdir(output_dir/file) and create_output_dir == False:
+    elif not os.listdir(output_dir / file) and create_output_dir == False:
         raise ValueError("Specified output directory does not exist and cannot create it")
-    elif not os.listdir(output_dir/file) and create_output_dir:
-        os.mkdir(output_dir/file)
+    elif not os.listdir(output_dir / file) and create_output_dir:
+        os.mkdir(output_dir / file)
 
     save_at = output_dir / file
     counter = 0

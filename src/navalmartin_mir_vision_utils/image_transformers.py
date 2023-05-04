@@ -1,10 +1,19 @@
-from PIL import Image
+from PIL.Image import Image as PILImage
+from PIL import ImageOps
+from typing import List
 import numpy as np
 import io
 
-from PIL import ImageOps
+from navalmartin_mir_vision_utils.mir_vision_config import WITH_TORCH
+from navalmartin_mir_vision_utils.mir_vision_types import TorchTensor
+from navalmartin_mir_vision_utils.exceptions import InvalidConfiguration
 
-def pil2ndarray(image: Image) -> np.ndarray:
+if WITH_TORCH:
+    import torch
+    from torchvision import transforms
+
+
+def pil_to_ndarray(image: PILImage) -> np.ndarray:
     """Convert the Pillow image into a numpy array
 
     Parameters
@@ -18,7 +27,48 @@ def pil2ndarray(image: Image) -> np.ndarray:
     return np.asarray(image)
 
 
-def pil_image_to_bytes_string(image: Image) -> bytes:
+def pil_to_torch_tensor(image: PILImage) -> TorchTensor:
+    """Convert the given Pillow image to a PyTorch tensor.
+    Raises  InvalidConfiguration if PyTorch is not installed
+
+    Parameters
+    ----------
+    image: The Pillow image
+
+    Returns
+    -------
+
+    an instance of torch.Tensor
+    """
+    if not WITH_TORCH:
+        raise InvalidConfiguration(message="PyTorch is not installed so cannot use pil_to_torch_tensor")
+
+    return transforms.PILToTensor()(image)
+
+
+def pils_to_torch_tensor(images: List[PILImage]) -> TorchTensor:
+    """Convert the given Pillow image to a PyTorch tensor.
+    Raises  InvalidConfiguration if PyTorch is not installed
+
+    Parameters
+    ----------
+    image: The Pillow image
+
+    Returns
+    -------
+
+    an instance of torch.Tensor
+    """
+    if not WITH_TORCH:
+        raise InvalidConfiguration(message="PyTorch is not installed so cannot use pil_to_torch_tensor")
+
+    tensors = []
+    for img in images:
+        tensors.append(transforms.PILToTensor()(img))
+    return torch.stack(tensors)
+
+
+def pil_image_to_bytes_string(image: PILImage) -> bytes:
     """Returns the byte string of the provided image.
     Code adapted from https://stackoverflow.com/questions/33101935/convert-pil-image-to-byte-array
     Parameters
@@ -38,7 +88,7 @@ def pil_image_to_bytes_string(image: Image) -> bytes:
     return imgByteArr
 
 
-def pil_to_rgb(image: Image) -> Image:
+def pil_to_rgb(image: PILImage) -> PILImage:
     """Convert the PIL.Image to RGB. This function
     can be used to convert a PNG image to JPG/JPEG
     formats. Note that this function simply returns the
@@ -62,7 +112,7 @@ def pil_to_rgb(image: Image) -> Image:
     return image.convert("RGB")
 
 
-def pil_to_grayscale(img: Image) -> Image:
+def pil_to_grayscale(img: PILImage) -> PILImage:
     """Converts the given image to greyscale
 
     Parameters

@@ -4,12 +4,19 @@ wrapper to load a labeled image dataset
 """
 import random
 from pathlib import Path
-from typing import List, Any, Callable
+from typing import List, Any, Callable, Tuple
 import os
 
 from navalmartin_mir_vision_utils.image_utils import get_img_files
 from navalmartin_mir_vision_utils.image_loaders import load_img
 from navalmartin_mir_vision_utils.image_enums import (ImageLoadersEnumType, IMAGE_STR_TYPES)
+from navalmartin_mir_vision_utils.mir_vision_config import WITH_TORCH
+from navalmartin_mir_vision_utils.exceptions import InvalidConfiguration
+from navalmartin_mir_vision_utils.mir_vision_types import TorchTensor
+from navalmartin_mir_vision_utils.image_transformers import pil_to_torch_tensor
+
+if WITH_TORCH:
+    import torch
 
 
 class LabeledImageDataset(object):
@@ -18,6 +25,52 @@ class LabeledImageDataset(object):
     subdirectories that represent the labels
 
     """
+
+    @staticmethod
+    def as_pytorch_tensor(dataset: "LabeledImageDataset",
+                          transformer: Callable = None) -> Tuple[TorchTensor, List[int]]:
+        """Return
+
+        Parameters
+        ----------
+        dataset
+
+        Returns
+        -------
+
+        """
+        if not WITH_TORCH:
+            raise InvalidConfiguration(message="PyTorch is not installed so cannot use pil_to_torch_tensor")
+
+        labels = []
+        data: List[TorchTensor] = []
+
+        if dataset.loader_type == ImageLoadersEnumType.PIL:
+            for image in dataset:
+                img = image[0]
+                label = image[1]
+
+                if transformer is not None:
+                    img = transformer(img)
+                    data.append(pil_to_torch_tensor(image=img))
+                else:
+                    data.append(pil_to_torch_tensor(image=img))
+                labels.append(label)
+            return torch.stack(data), labels
+        elif dataset.loader_type == ImageLoadersEnumType.PYTORCH_TENSOR:
+            for image in dataset:
+                img = image[0]
+                label = image[1]
+
+                if transformer is not None:
+                    img = transformer(img)
+
+                data.append(img)
+                labels.append(label)
+            return torch.stack(data), labels
+        else:
+            raise ValueError(f"Invalid loader type {dataset.loader_type} "
+                             f"not in [ImageLoadersEnumType.PIL, ImageLoadersEnumType.PYTORCH_TENSOR]")
 
     def __init__(self, labels: List[tuple], base_path: Path,
                  do_load: bool = True, *,
@@ -138,3 +191,6 @@ class LabeledImageDataset(object):
             self.images.extend(label_images)
 
             self.image_formats = tmp_img_formats
+
+
+
