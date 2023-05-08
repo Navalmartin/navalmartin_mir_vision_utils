@@ -29,16 +29,23 @@ class LabeledImageDataset(object):
     @staticmethod
     def as_pytorch_tensor(dataset: "LabeledImageDataset",
                           transformer: Callable = None) -> Tuple[TorchTensor, List[int]]:
-        """Return
+        """Returns a tuple with the images in the dataset as
+        PyTorch tensors. If the images were loaded using ImageLoadersEnumType.PIL
+        then the image is first converted into a PyTorch tensor.
+        Acceptable loaders for the given dataset are ImageLoadersEnumType.PIL or
+        ImageLoadersEnumType.PYTORCH_TENSOR
+        If WITH_TORCH == False, it raises InvalidConfiguration.
+        If the dataset loader is not of the right type it raises ValueError
 
         Parameters
         ----------
-        transformer
-        dataset
+        transformer: A list of operations to apply on the returned tensors
+        dataset: The dataset to work on
 
         Returns
         -------
 
+        A tuple of PyTorch tensor, List[int]
         """
         if not WITH_TORCH:
             raise InvalidConfiguration(message="PyTorch is not installed so cannot use pil_to_torch_tensor")
@@ -51,12 +58,17 @@ class LabeledImageDataset(object):
                 img = image[0]
                 label = image[1]
 
+                if isinstance(img, torch.Tensor):
+                    raise ValueError(f"Dataset loader type is {ImageLoadersEnumType.PIL.name} "
+                                     f"but image point is of type torch.Tensor. "
+                                     f"Have you applied any transformation to the images?")
+
+                # first convert to pytorch tensor and
+                # then apply the transformations
+                img = pil_to_torch_tensor(image=img, unsqueeze_dim=None)
                 if transformer is not None:
-                    img = pil_to_torch_tensor(image=img)
                     img = transformer(img)
-                    data.append(img)
-                else:
-                    data.append(pil_to_torch_tensor(image=img))
+                data.append(img)
                 labels.append(label)
             return torch.stack(data), labels
         elif dataset.loader_type == ImageLoadersEnumType.PYTORCH_TENSOR:
