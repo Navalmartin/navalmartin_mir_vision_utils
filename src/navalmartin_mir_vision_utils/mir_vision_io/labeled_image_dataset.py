@@ -33,6 +33,7 @@ class LabeledImageDataset(object):
 
         Parameters
         ----------
+        transformer
         dataset
 
         Returns
@@ -51,8 +52,9 @@ class LabeledImageDataset(object):
                 label = image[1]
 
                 if transformer is not None:
+                    img = pil_to_torch_tensor(image=img)
                     img = transformer(img)
-                    data.append(pil_to_torch_tensor(image=img))
+                    data.append(img)
                 else:
                     data.append(pil_to_torch_tensor(image=img))
                 labels.append(label)
