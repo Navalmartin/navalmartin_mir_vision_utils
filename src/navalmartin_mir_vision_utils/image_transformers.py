@@ -1,4 +1,5 @@
 from PIL.Image import Image as PILImage
+from PIL import Image
 from PIL import ImageOps
 from typing import List
 import numpy as np
@@ -27,12 +28,13 @@ def pil_to_ndarray(image: PILImage) -> np.ndarray:
     return np.asarray(image)
 
 
-def pil_to_torch_tensor(image: PILImage) -> TorchTensor:
+def pil_to_torch_tensor(image: PILImage, unsqueeze_dim: int = 0) -> TorchTensor:
     """Convert the given Pillow image to a PyTorch tensor.
     Raises  InvalidConfiguration if PyTorch is not installed
 
     Parameters
     ----------
+    unsqueeze_dim: The dimension to unsqueeze the produced torch tensor
     image: The Pillow image
 
     Returns
@@ -43,16 +45,22 @@ def pil_to_torch_tensor(image: PILImage) -> TorchTensor:
     if not WITH_TORCH:
         raise InvalidConfiguration(message="PyTorch is not installed so cannot use pil_to_torch_tensor")
 
-    return transforms.PILToTensor()(image)
+    if unsqueeze_dim is None or unsqueeze_dim == -1:
+        return transforms.ToTensor()(image)
+    else:
+        return transforms.ToTensor()(image).unsqueeze_(unsqueeze_dim)
+
+    #return transforms.PILToTensor()(image)
 
 
-def pils_to_torch_tensor(images: List[PILImage]) -> TorchTensor:
+def pils_to_torch_tensor(images: List[PILImage], unsqueeze_dim: int = 0) -> TorchTensor:
     """Convert the given Pillow image to a PyTorch tensor.
     Raises  InvalidConfiguration if PyTorch is not installed
 
     Parameters
     ----------
-    image: The Pillow image
+    unsqueeze_dim: The dimension to unsqueeze the produced torch tensor
+    images: The list of Pillow images
 
     Returns
     -------
@@ -64,7 +72,7 @@ def pils_to_torch_tensor(images: List[PILImage]) -> TorchTensor:
 
     tensors = []
     for img in images:
-        tensors.append(transforms.PILToTensor()(img))
+        tensors.append(pil_to_torch_tensor(img, unsqueeze_dim))
     return torch.stack(tensors)
 
 
@@ -126,3 +134,19 @@ def pil_to_grayscale(img: PILImage) -> PILImage:
     """
     # makes it greyscale
     return ImageOps.grayscale(img)
+
+
+def pil_image_from_array(img: List) -> PILImage:
+    """Build a Pillow image from the given
+    list values
+
+    Parameters
+    ----------
+    img
+
+    Returns
+    -------
+
+    An instance of Image
+    """
+    return Image.fromarray(np.uint8(img))
