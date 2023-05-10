@@ -22,6 +22,7 @@ class ImageLoadersEnumType(Enum):
     CV2 = 2
     PIL_NUMPY = 3
     PYTORCH_TENSOR = 4
+    FILEPATH = 5
 
 
 IMAGE_LOADERS_TYPES_STR = ('PIL', 'CV2', 'PIL_NUMPY', 'PYTORCH_TENSOR')

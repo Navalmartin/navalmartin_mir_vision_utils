@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
 from pathlib import Path
-from typing import Callable, List, Union, TypeVar
+from typing import Callable, List, Any
 from io import BytesIO
 
 from navalmartin_mir_vision_utils import get_img_files
@@ -23,7 +23,7 @@ if WITH_CV2:
 
 
 def load_img(path: Path, transformer: Callable = None,
-             loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL):
+             loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL) -> Any:
     """Load the image from the given path
 
     Parameters
@@ -60,6 +60,9 @@ def load_img(path: Path, transformer: Callable = None,
             return load_image_pytorch_tensor(path=path, transformer=transformer)
         else:
             raise InvalidConfiguration(message="PyTorch was not found.")
+
+    if loader == ImageLoadersEnumType.FILEPATH:
+        return path
 
     return None
 
@@ -98,7 +101,7 @@ def load_pil_image_from_byte_string(image_byte_string: bytes,
 
 def load_images(path: Path, transformer: Callable = None,
                 loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
-                img_formats: tuple = IMAGE_STR_TYPES) -> List:
+                img_formats: tuple = IMAGE_STR_TYPES) -> List[Any]:
     """Loads all the images in the specified path
 
     Parameters
@@ -130,17 +133,14 @@ def load_images(path: Path, transformer: Callable = None,
 
 
 def load_images_from_paths(imgs: List[Path], transformer: Callable,
-                           loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL):
+                           loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL) -> List[Any]:
     if len(imgs) == 0:
         raise ValueError("Empty images paths")
 
     if loader not in IMAGE_LOADERS_TYPES_STR:
         raise ValueError(f"Invalid loader. Loader={loader} not in {IMAGE_LOADERS_TYPES_STR}")
 
-    imgs_data = []
-    for img in imgs:
-        imgs_data.append(load_img(path=img, transformer=transformer, loader=loader))
-
+    imgs_data = [load_img(path=img, transformer=transformer, loader=loader) for img in imgs]
     return imgs_data  
 
 
