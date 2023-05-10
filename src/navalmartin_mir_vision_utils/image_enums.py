@@ -25,7 +25,8 @@ class ImageLoadersEnumType(Enum):
     FILEPATH = 5
 
 
-IMAGE_LOADERS_TYPES_STR = ('PIL', 'CV2', 'PIL_NUMPY', 'PYTORCH_TENSOR')
+IMAGE_LOADERS_TYPES_STR = ('PIL', 'CV2', 'PIL_NUMPY',
+                           'PYTORCH_TENSOR', 'FILEPATH')
 
 
 class ValidPillowEnumType(Enum):
