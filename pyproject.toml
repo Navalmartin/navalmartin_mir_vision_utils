@@ -3,7 +3,7 @@ requires = ["hatchling", "numpy", "Pillow", "scipy", "scikit-image", "libsvm"]
 build-backend = "hatchling.build"
 [project]
 name = "navalmartin_mir_vision_utils"
-version = "0.0.29"
+version = "0.0.30"
 authors = [
   { name="Alexandros Giavaras", email="a.giavaras@gmail.com" },
 ]
