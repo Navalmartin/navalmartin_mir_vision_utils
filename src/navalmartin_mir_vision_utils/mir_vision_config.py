@@ -1,8 +1,10 @@
 import skimage
+from pathlib import Path
 
 WITH_SKIMAGE_VERSION = skimage.__version__
 WITH_TORCH = False
 WITH_CV2 = False
+DUMMY_PATH = Path("/this/is/a/dummy/path")
 
 try:
     import torch
