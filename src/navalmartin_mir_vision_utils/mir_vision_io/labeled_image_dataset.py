@@ -20,8 +20,6 @@ if WITH_TORCH:
     import torch
 
 
-
-
 class LabeledImageDataset(object):
     """Simple class to load from a specified
     directory images that are organised into
@@ -199,6 +197,57 @@ class LabeledImageDataset(object):
 
         """
         return self._images_per_label
+
+    @property
+    def label_names(self) -> List[str]:
+        """Returns the names of the labels
+
+        Returns
+        -------
+
+        A python list with the names of the labels
+        """
+        return [label[0] for label in self.unique_labels]
+
+    def get_label_name(self, index: int) -> str:
+        """Returns the label name associated with
+        the given label index. If the index is not found
+        raise ValueError
+
+        Parameters
+        ----------
+        index: The label index to look for its label
+
+        Returns
+        -------
+
+        The label name corresponding to this index
+        """
+
+        for label in self.unique_labels:
+            if label[1] == index:
+                return label[0]
+        raise ValueError(f"Index={index} not found in dataset")
+
+    def get_label_idx(self, label_name: str) -> int:
+        """Returns the index that corresponds to the given
+        label name. Returns -1 if the label name is not found
+        in the list of self.unique_labels
+
+        Parameters
+        ----------
+        label_name: The name of the label to look for its index
+
+        Returns
+        -------
+
+        Integer representing the index of the label
+        """
+        for label in self.unique_labels:
+            if label[0] == label_name:
+                return label[1]
+
+        return -1
 
     def clear(self, full_clear: bool = True) -> None:
         """Invalidate the dataset
