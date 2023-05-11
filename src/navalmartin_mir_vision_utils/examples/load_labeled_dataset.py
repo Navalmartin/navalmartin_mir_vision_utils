@@ -1,11 +1,20 @@
 from pathlib import Path
 import pprint
+import numpy as np
 from torchvision import transforms
+
+try:
+    from sklearn.model_selection import train_test_split
+except ModuleNotFoundError as e:
+    print("This example requires sklearn support")
+
 from navalmartin_mir_vision_utils.mir_vision_io import LabeledImageDataset
 from navalmartin_mir_vision_utils import plot_pil_images_with_label, ImageLoadersEnumType
 from navalmartin_mir_vision_utils import pil_to_rgb
 
 if __name__ == '__main__':
+
+    # you will have to use your own path
     base_path = Path("/home/alex/qi3/mir_datasets/vessel_classification")
     dataset = LabeledImageDataset(unique_labels=[("catamaran", 0),
                                                  ("rib", 1),
@@ -68,3 +77,27 @@ if __name__ == '__main__':
     transformer = transforms.Compose([pil_to_rgb, transforms.Resize((256, 256))])
     tensor_images, labels = LabeledImageDataset.as_pytorch_tensor(dataset, transformer)
     pprint.pprint(f"Tensor size={tensor_images.size()}")
+
+    dataset.clear(full_clear=False)
+    dataset.load(loader_type=ImageLoadersEnumType.FILEPATH,
+                 transformer=None, force_load=False)
+
+    # we want to split the dataset into train-validation-test sets
+    x_train, x_test, x_train_labels, x_test_labels = train_test_split(dataset.images,
+                                                                      dataset.image_labels,
+                                                                      test_size=0.25,
+                                                                      random_state=42,
+                                                                      shuffle=True)
+
+    unique_test_labels_idxs = np.unique(x_test_labels)
+    unique_test_labels = [(dataset.get_label_name(index), index) for index in unique_test_labels_idxs]
+
+    # create the test set
+    test_set = LabeledImageDataset.build_from_list(images=x_test,
+                                                   unique_labels=unique_test_labels,
+                                                   image_labels=x_test_labels,
+                                                   loader_type=ImageLoadersEnumType.FILEPATH,
+                                                   transformer=None)
+
+    pprint.pprint(f"Test set number of images {len(test_set)}")
+    pprint.pprint(f"Number of images per class {test_set.n_images_per_label}")

@@ -11,7 +11,7 @@ import os
 from navalmartin_mir_vision_utils.image_utils import get_img_files
 from navalmartin_mir_vision_utils.image_loaders import load_img
 from navalmartin_mir_vision_utils.image_enums import (ImageLoadersEnumType, IMAGE_STR_TYPES)
-from navalmartin_mir_vision_utils.mir_vision_config import WITH_TORCH
+from navalmartin_mir_vision_utils.mir_vision_config import WITH_TORCH, DUMMY_PATH
 from navalmartin_mir_vision_utils.exceptions import InvalidConfiguration
 from navalmartin_mir_vision_utils.mir_vision_types import TorchTensor
 from navalmartin_mir_vision_utils.image_transformers import pil_to_torch_tensor
@@ -101,17 +101,31 @@ class LabeledImageDataset(object):
     @classmethod
     def build_from_list(cls, images: List[Tuple[Union[Path, PILImage, TorchTensor], Union[int, str]]],
                         unique_labels: List[tuple],
-                        image_labels: List[int], loader_type: ImageLoadersEnumType,
+                        image_labels: List[int],
+                        loader_type: ImageLoadersEnumType,
+                        image_formats: List[str] = IMAGE_STR_TYPES,
                         transformer: Callable = None) -> "LabeledImageDataset":
 
         dataset = LabeledImageDataset(unique_labels=unique_labels,
-                                      base_path=None,
+                                      base_path=DUMMY_PATH,
                                       do_load=False,
                                       transformer=transformer,
-                                      loader_type=loader_type)
+                                      loader_type=loader_type,
+                                      image_formats=image_formats)
 
         dataset.images = images
         dataset.image_labels = image_labels
+        images_per_label = {}
+
+        for img_label in image_labels:
+            for item in unique_labels:
+                if img_label == item[1]:
+                    if item[0] in images_per_label:
+                        images_per_label[item[0]] += 1
+                    else:
+                        images_per_label[item[0]] = 1
+
+        dataset._images_per_label = images_per_label
         return dataset
 
     def __init__(self, unique_labels: List[tuple], base_path: Path,
@@ -259,7 +273,7 @@ class LabeledImageDataset(object):
 
         if full_clear:
             self.unique_labels = []
-            self.base_path = None
+            self.base_path = DUMMY_PATH
             self.image_formats = []
             self._current_pos: int = -1
 
@@ -299,6 +313,9 @@ class LabeledImageDataset(object):
             raise ValueError("Dataset is not empty. Have you called clear()?")
         elif not self.__can_load() and force_load:
             self.clear(full_clear=False)
+
+        if str(self.base_path) == str(DUMMY_PATH):
+            raise ValueError(f"Cannot load dataset from DUMMY_PATH={str(DUMMY_PATH)}. Specify a correct data path.")
 
         self.loader_type = loader_type
         tmp_img_formats = []
