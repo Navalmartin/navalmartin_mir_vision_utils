@@ -4,7 +4,8 @@ wrapper to load a labeled image dataset
 """
 import random
 from pathlib import Path
-from typing import List, Any, Callable, Tuple
+from PIL.Image import Image as PILImage
+from typing import List, Any, Callable, Tuple, Union, Dict
 import os
 
 from navalmartin_mir_vision_utils.image_utils import get_img_files
@@ -17,6 +18,8 @@ from navalmartin_mir_vision_utils.image_transformers import pil_to_torch_tensor
 
 if WITH_TORCH:
     import torch
+
+
 
 
 class LabeledImageDataset(object):
@@ -82,26 +85,75 @@ class LabeledImageDataset(object):
                 data.append(img)
                 labels.append(label)
             return torch.stack(data), labels
+        elif dataset.loader_type == ImageLoadersEnumType.FILEPATH:
+            for image in dataset:
+                img = image[0]
+                label = image[1]
+
+                pytorch_image = load_img(path=img, transformer=transformer,
+                                         loader=ImageLoadersEnumType.PYTORCH_TENSOR)
+
+                data.append(pytorch_image)
+                labels.append(label)
+            return torch.stack(data), labels
         else:
             raise ValueError(f"Invalid loader type {dataset.loader_type} "
                              f"not in [ImageLoadersEnumType.PIL, ImageLoadersEnumType.PYTORCH_TENSOR]")
 
-    def __init__(self, labels: List[tuple], base_path: Path,
-                 do_load: bool = True, *,
-                 image_formats: List[Any] = IMAGE_STR_TYPES,
-                 loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
-                 transformer: Callable = None):
+    @classmethod
+    def build_from_list(cls, images: List[Tuple[Union[Path, PILImage, TorchTensor], Union[int, str]]],
+                        unique_labels: List[tuple],
+                        image_labels: List[int], loader_type: ImageLoadersEnumType,
+                        transformer: Callable = None) -> "LabeledImageDataset":
 
-        self.labels: List[tuple] = labels
+        dataset = LabeledImageDataset(unique_labels=unique_labels,
+                                      base_path=None,
+                                      do_load=False,
+                                      transformer=transformer,
+                                      loader_type=loader_type)
+
+        dataset.images = images
+        dataset.image_labels = image_labels
+        return dataset
+
+    def __init__(self, unique_labels: List[tuple], base_path: Path,
+                 do_load: bool = True, *,
+                 image_formats: List[str] = IMAGE_STR_TYPES,
+                 loader_type: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
+                 transformer: Callable = None):
+        """Constructor. Initialize the dataset by providing
+        the unique labels for the images in a form of [("label_name", idx)]
+        and provide the base path to load the images from.
+        The path should arrange the images into directories that each
+        directory has the 'label_name' from the unique_labels.
+        Depending on the loader_type the class will hold images into one of the
+        following three options
+
+        - Path -> loader_type == ImageLoadersEnumType.FILENAME
+        - PILImage -> loader_type == ImageLoadersEnumType.PIL
+        - TorchTensor -> loader_type == ImageLoadersEnumType.PYTORCH_TENSOR
+
+        Parameters
+        ----------
+        unique_labels: The unique labels for the images
+        base_path: The base path to pull images from
+        do_load: Flag indicating if the images should be loaded on construction
+        image_formats: The formats of the images to consider
+        loader_type: What loader to use
+        transformer: Whether any transformation should be applied whilst loading the images
+        """
+
+        self.unique_labels: List[Tuple[str, int]] = unique_labels
         self.base_path = base_path
-        self.image_formats = image_formats
-        self.images: List[tuple] = []
-        self.loader_type = loader
-        self._images_per_label = {}
+        self.image_formats: List[str] = image_formats
+        self.images: List[Tuple[Union[Path, PILImage, TorchTensor], Union[int, str]]] = []
+        self.image_labels: List[int] = []
+        self.loader_type: ImageLoadersEnumType = loader_type
+        self._images_per_label: Dict = {}
         self._current_pos: int = -1
 
         if do_load:
-            self.load(loader=loader, transformer=transformer)
+            self.load(loader_type=loader_type, transformer=transformer)
 
     def __len__(self) -> int:
         return len(self.images)
@@ -135,7 +187,7 @@ class LabeledImageDataset(object):
         return self.images[key]
 
     def __del__(self) -> None:
-        self.clean()
+        self.clear()
 
     @property
     def n_images_per_label(self) -> dict:
@@ -148,20 +200,24 @@ class LabeledImageDataset(object):
         """
         return self._images_per_label
 
-    def clean(self) -> None:
+    def clear(self, full_clear: bool = True) -> None:
         """Invalidate the dataset
 
         Returns
         -------
 
         """
-        self.labels = []
-        self.base_path = None
-        self.image_formats = []
+
+        if full_clear:
+            self.unique_labels = []
+            self.base_path = None
+            self.image_formats = []
+            self._current_pos: int = -1
+
+        self.loader_type = ImageLoadersEnumType.INVALID
         self.images = []
-        self.loader_type = None
+        self.image_labels = []
         self._images_per_label = {}
-        self._current_pos: int = -1
 
     def shuffle(self) -> None:
         """Randomly shuffle  the contents of the dataset
@@ -172,13 +228,33 @@ class LabeledImageDataset(object):
         """
         random.shuffle(self.images)
 
-    def load(self, loader: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
-             transformer: Callable = None) -> None:
+    def apply_transform(self, transformer: Callable) -> None:
+        """Apply the given transformation on all images
+        in the dataset. This eventually will transform all the
+        images.
 
-        self.loader_type = loader
+        Parameters
+        ----------
+        transformer: Callable to apply on the images
+
+        Returns
+        -------
+
+        """
+        self.images = [(transformer(img[0]), img[1]) for img in self.images]
+
+    def load(self, loader_type: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
+             transformer: Callable = None, force_load: bool = False) -> None:
+
+        if not self.__can_load() and not force_load:
+            raise ValueError("Dataset is not empty. Have you called clear()?")
+        elif not self.__can_load() and force_load:
+            self.clear(full_clear=False)
+
+        self.loader_type = loader_type
         tmp_img_formats = []
 
-        for label in self.labels:
+        for label in self.unique_labels:
 
             label_name = label[0]
             label_idx = label[1]
@@ -189,6 +265,7 @@ class LabeledImageDataset(object):
                                                   img_formats=self.image_formats)
 
             label_images = []
+            labels = []
             # load every image in the Path
             for img in img_files:
 
@@ -199,12 +276,27 @@ class LabeledImageDataset(object):
 
                 label_images.append((load_img(path=img,
                                               transformer=transformer,
-                                              loader=loader), label_idx))
+                                              loader=loader_type), label_idx))
+                labels.append(label_idx)
 
             self._images_per_label[label] = len(label_images)
             self.images.extend(label_images)
-
+            self.image_labels.extend(labels)
             self.image_formats = tmp_img_formats
 
+    def __can_load(self) -> bool:
+        """Checks if the right conditions are met to laod
+        a dataset
 
+        Returns
+        -------
+        A flag indicating if the right conditions are met to load
+        """
 
+        if len(self.images) != 0:
+            return False
+
+        if len(self.image_labels) != 0:
+            return False
+
+        return True
