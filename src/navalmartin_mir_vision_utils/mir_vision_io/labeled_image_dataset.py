@@ -4,8 +4,10 @@ wrapper to load a labeled image dataset
 """
 import random
 from pathlib import Path
+
 from PIL.Image import Image as PILImage
 from typing import List, Any, Callable, Tuple, Union, Dict
+import csv
 import os
 
 from navalmartin_mir_vision_utils.image_utils import get_img_files
@@ -126,6 +128,51 @@ class LabeledImageDataset(object):
                         images_per_label[item[0]] = 1
 
         dataset._images_per_label = images_per_label
+        return dataset
+
+    @classmethod
+    def load_from_csv(cls, csv_filename: Path, base_path: Path) -> "LabeledImageDataset":
+        """Load the dataset from the given CSV file. The file should
+        have the following format ('image_filename', image_label_index, 'image_label_name')
+
+        Parameters
+        ----------
+        csv_filename: The CSV file to load the dataset from
+        base_path: The base (i.e. root) path that dataset resides
+
+        Returns
+        -------
+
+        """
+
+        images: List[Tuple[Union[Path], Union[int]]] = []
+        image_labels: List[int] = []
+        unique_labels = []
+        image_formats = []
+        with open(csv_filename, 'r', newline='\n') as csvfile:
+            filereader = csv.reader(csvfile, delimiter=",")
+
+            for row in filereader:
+
+                if len(row) != 3:
+                    raise ValueError(f"Invalid format. File should have 3 columns but has {len(row)}")
+
+                images.append((Path(str(base_path) + "/" + row[2] + "/" + row[0]), int(row[1])))
+                image_labels.append(int(row[1]))
+                format_ = Path(row[0]).suffix
+
+                if format_ not in image_formats:
+                    image_formats.append(format_)
+
+                if (row[2], int(row[1])) not in unique_labels:
+                    unique_labels.append((row[2], int(row[1])))
+
+        dataset = LabeledImageDataset.build_from_list(images=images,
+                                                      image_labels=image_labels,
+                                                      unique_labels=unique_labels,
+                                                      loader_type=ImageLoadersEnumType.FILEPATH,
+                                                      image_formats=image_formats)
+        dataset.base_path=base_path
         return dataset
 
     def __init__(self, unique_labels: List[tuple], base_path: Path,
@@ -349,6 +396,33 @@ class LabeledImageDataset(object):
             self.images.extend(label_images)
             self.image_labels.extend(labels)
             self.image_formats = tmp_img_formats
+
+    def save_to_csv(self, filename: Path) -> None:
+        """Save the given dataset in a CSV format.
+        Currently, only a dataset that has
+        loader_type == ImageLoadersEnumType.FILENAME
+
+        Parameters
+        ----------
+        filename: The file to save the dataset
+
+        Returns
+        -------
+        """
+
+        if self.loader_type != ImageLoadersEnumType.FILEPATH:
+            raise ValueError(f"Cannot save a dataset loaded with {self.loader_type.name}. "
+                             f"Load dataset using {ImageLoadersEnumType.FILEPATH.name}. ")
+
+        with open(filename, 'w', newline='\n') as csvfile:
+            filewriter = csv.writer(csvfile, delimiter=",")
+
+            for img, label in zip(self.images, self.image_labels):
+                label_name = self.get_label_name(label)
+                image = str(img[0]).split("/")[-1]
+                row = [image, label, label_name]
+
+                filewriter.writerow(row)
 
     def __can_load(self) -> bool:
         """Checks if the right conditions are met to laod

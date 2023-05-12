@@ -73,6 +73,18 @@ if __name__ == '__main__':
     pprint.pprint(f"Number of images {len(dataset)}")
     pprint.pprint(f"Number of images per class {dataset.n_images_per_label}")
 
+    # A dataset loaded as FILEPATH can be saved as CSV
+    dataset.save_to_csv(filename=Path("/home/alex/qi3/mir_vision_utils/src/navalmartin_mir_vision_utils/examples/vessel_classification.csv"))
+
+    # relaod the dataset
+    dataset = LabeledImageDataset.load_from_csv(Path("/home/alex/qi3/mir_vision_utils/src/navalmartin_mir_vision_utils/examples/vessel_classification.csv"),
+                                                base_path)
+
+    # this should be the same as above
+    pprint.pprint("Dataset after loading from CSV")
+    pprint.pprint(f"Number of images {len(dataset)}")
+    pprint.pprint(f"Number of images per class {dataset.n_images_per_label}")
+
     # get PyTorch tensor with images and labels
     transformer = transforms.Compose([pil_to_rgb, transforms.Resize((256, 256))])
     tensor_images, labels = LabeledImageDataset.as_pytorch_tensor(dataset, transformer)
