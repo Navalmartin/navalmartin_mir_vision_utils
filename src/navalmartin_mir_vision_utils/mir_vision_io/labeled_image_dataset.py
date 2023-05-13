@@ -172,7 +172,7 @@ class LabeledImageDataset(object):
                                                       unique_labels=unique_labels,
                                                       loader_type=ImageLoadersEnumType.FILEPATH,
                                                       image_formats=image_formats)
-        dataset.base_path=base_path
+        dataset.base_path = base_path
         return dataset
 
     def __init__(self, unique_labels: List[tuple], base_path: Path,
@@ -338,6 +338,25 @@ class LabeledImageDataset(object):
         """
         random.shuffle(self.images)
 
+    def random_selection(self, size: int) -> List[int]:
+        """Returns a list of indices of the given size
+        randomly selected
+
+        Parameters
+        ----------
+        size: The size of the random sample
+
+        Returns
+        -------
+
+        """
+
+        if size >= len(self.images):
+            raise ValueError(f"Invalid size parameter. size should be in [0,{len(self.images)}) but is {size}")
+
+        indices = [i for i in range(len(self.images))]
+        return random.sample(indices, size)
+
     def apply_transform(self, transformer: Callable) -> None:
         """Apply the given transformation on all images
         in the dataset. This eventually will transform all the
@@ -352,6 +371,33 @@ class LabeledImageDataset(object):
 
         """
         self.images = [(transformer(img[0]), img[1]) for img in self.images]
+
+    def add_to_class(self, images: List[Tuple[Union[Path, PILImage, TorchTensor], Union[int, str]]],
+                     class_name: str):
+
+        """Append the given images to the class. Raises ValueError
+        if the class_name is not in the unique_labels
+
+        Parameters
+        ----------
+        images: Images to append
+        class_name: The class name to append the images
+
+        Returns
+        -------
+
+        """
+
+        if len(images) == 0:
+            return
+
+        class_item = self.get_label_idx(label_name=class_name)
+        if class_item == -1:
+            raise ValueError(f"Label {class_name} not in dataset")
+
+        self.images.extend(images)
+        self.image_labels.extend([class_item]*len(images))
+        self._images_per_label[class_name] += len(images)
 
     def load(self, loader_type: ImageLoadersEnumType = ImageLoadersEnumType.PIL,
              transformer: Callable = None, force_load: bool = False) -> None:

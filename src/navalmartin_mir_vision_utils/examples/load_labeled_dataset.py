@@ -48,7 +48,7 @@ if __name__ == '__main__':
     dataset.apply_transform(transformer=pil_to_rgb)
 
     # if an image is png it has 4 channels so won't
-    # be possible to stack the tenosrs. Thus we need
+    # be possible to stack the tensors. Thus we need
     # to convert to rgb
     transformer = transforms.Compose([transforms.Resize((256, 256))])
 
