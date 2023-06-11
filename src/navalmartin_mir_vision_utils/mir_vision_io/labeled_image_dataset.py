@@ -131,7 +131,7 @@ class LabeledImageDataset(object):
         return dataset
 
     @classmethod
-    def load_from_csv(cls, csv_filename: Path, base_path: Path) -> "LabeledImageDataset":
+    def load_from_csv(cls, csv_filename: Path, base_path: Path, path_creator: Callable = None) -> "LabeledImageDataset":
         """Load the dataset from the given CSV file. The file should
         have the following format ('image_filename', image_label_index, 'image_label_name')
 
@@ -139,7 +139,7 @@ class LabeledImageDataset(object):
         ----------
         csv_filename: The CSV file to load the dataset from
         base_path: The base (i.e. root) path that dataset resides
-
+        path_creator: Adapt the path formed from the CSV rows
         Returns
         -------
 
@@ -157,7 +157,11 @@ class LabeledImageDataset(object):
                 if len(row) != 3:
                     raise ValueError(f"Invalid format. File should have 3 columns but has {len(row)}")
 
-                images.append((Path(str(base_path) + "/" + row[2] + "/" + row[0]), int(row[1])))
+                if path_creator is not None:
+                    img_path = path_creator(row)
+                else:
+                    img_path = Path(str(base_path) + "/" + row[2] + "/" + row[0])
+                images.append((img_path, int(row[1])))
                 image_labels.append(int(row[1]))
                 format_ = Path(row[0]).suffix
 
