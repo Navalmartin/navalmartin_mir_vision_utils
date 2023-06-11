@@ -438,7 +438,7 @@ class LabeledImageDataset(object):
                                               loader=loader_type), label_idx))
                 labels.append(label_idx)
 
-            self._images_per_label[label] = len(label_images)
+            self._images_per_label[label_name] = len(label_images)
             self.images.extend(label_images)
             self.image_labels.extend(labels)
             self.image_formats = tmp_img_formats
