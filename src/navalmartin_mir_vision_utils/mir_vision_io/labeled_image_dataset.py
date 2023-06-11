@@ -338,6 +338,25 @@ class LabeledImageDataset(object):
         """
         random.shuffle(self.images)
 
+    def get_class_images(self, class_name: str) -> List[Tuple[Union[Path, PILImage, TorchTensor], Union[int, str]]]:
+        """Get the images corresponding to the class name.
+        It raises ValueError if the class_name is not in the dataset
+
+        Parameters
+        ----------
+        class_name: The class name to get the images from
+
+        Returns
+        -------
+
+        Instance of: List[Tuple[Union[Path, PILImage, TorchTensor], Union[int, str]]]
+        """
+        if class_name not in self._images_per_label:
+            raise ValueError(f"Class name {class_name} not in dataset")
+
+        class_idx = self.get_label_idx(class_name)
+        return [item for item in self.images if item[1] == class_idx]
+
     def random_selection(self, size: int) -> List[int]:
         """Returns a list of indices of the given size
         randomly selected
@@ -349,6 +368,7 @@ class LabeledImageDataset(object):
         Returns
         -------
 
+        Instance of List[int]
         """
 
         if size >= len(self.images):
@@ -356,6 +376,63 @@ class LabeledImageDataset(object):
 
         indices = [i for i in range(len(self.images))]
         return random.sample(indices, size)
+
+    def random_selection_for_class(self, size: int, class_name: str) -> List[Tuple[Union[Path, PILImage, TorchTensor], Union[int, str]]]:
+        """Returns a random selection of images corresponding to the given
+        class name. Raises ValueError if the class_name is not in the dataset.
+        Raises ValueError if the given size is greater than or equal to the number
+        of images in the dataset that correspond to the given dataset.
+
+        Parameters
+        ----------
+        size: The size of the random sample to return
+        class_name: The class name to get the images from
+
+        Returns
+        -------
+
+        Instance of: List[Tuple[Union[Path, PILImage, TorchTensor], Union[int, str]]]
+        """
+
+        if class_name not in self._images_per_label:
+            raise ValueError(f"Class name {class_name} not in dataset")
+
+        n_images_for_class = self._images_per_label[class_name]
+
+        if size >= n_images_for_class:
+            raise ValueError(f"Invalid size parameter. size should be in [0,{n_images_for_class}) but is {size}")
+
+        # get the images for the class
+        class_images = self.get_class_images(class_name)
+        return random.sample(class_images, size)
+
+    def remove_images(self, images: List[Tuple[Union[Path, PILImage], Union[int, str]]]) -> None:
+        """Remove the images specified in the list
+
+        Parameters
+        ----------
+        images: The images to remove
+
+        Returns
+        -------
+        """
+
+        for img in images:
+
+            image = img[0]
+            if isinstance(image, Path):
+                self.images.remove(img)
+                label = img[1]
+                label_name = self.get_label_name(label)
+                self._images_per_label[label_name] -= 1
+            elif isinstance(image, PILImage):
+                self.images.remove(img)
+                label = img[1]
+                label_name = self.get_label_name(label)
+                self._images_per_label[label_name] -= 1
+            else:
+                raise ValueError("Cannot remove image. Image should be either Path or PIL.Image")
+
 
     def apply_transform(self, transformer: Callable) -> None:
         """Apply the given transformation on all images

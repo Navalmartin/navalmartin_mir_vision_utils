@@ -50,7 +50,7 @@ def pil_to_torch_tensor(image: PILImage, unsqueeze_dim: int = 0) -> TorchTensor:
     else:
         return transforms.ToTensor()(image).unsqueeze_(unsqueeze_dim)
 
-    #return transforms.PILToTensor()(image)
+    # return transforms.PILToTensor()(image)
 
 
 def pils_to_torch_tensor(images: List[PILImage], unsqueeze_dim: int = 0) -> TorchTensor:
@@ -74,6 +74,53 @@ def pils_to_torch_tensor(images: List[PILImage], unsqueeze_dim: int = 0) -> Torc
     for img in images:
         tensors.append(pil_to_torch_tensor(img, unsqueeze_dim))
     return torch.stack(tensors)
+
+
+def add_gaussian_noise_to_tensor(image: torch.Tensor,
+                                 noise_factor=0.3, **kwargs) -> torch.Tensor:
+    """Add Gaussian noise to the given torch.Tensor
+
+    Parameters
+    ----------
+    image: The image to add the image
+    noise_factor: The noise factor
+
+    Returns
+    -------
+    A torch.Tensor
+    """
+
+    mu = kwargs['mu'] if 'mu' in kwargs else 0.0
+    std = kwargs['std'] if 'std' in kwargs else 1.0
+
+    torch_input = transforms.ToTensor()(image)
+    noisy = torch_input + torch.randn_like(image) * noise_factor
+    image = torch.clip(noisy, mu, std)
+    return image
+
+
+def add_gaussian_noise_to_pil(image: PILImage,
+                              noise_factor=0.3, **kwargs) -> PILImage:
+    """Add Gaussian noise to the given Pillow image
+
+    Parameters
+    ----------
+    image: The image to add the image
+    noise_factor: The noise factor
+
+    Returns
+    -------
+    A Pillow image
+    """
+
+    mu = kwargs['mu'] if 'mu' in kwargs else 0.0
+    std = kwargs['std'] if 'std' in kwargs else 1.0
+
+    torch_input = transforms.ToTensor()(image)
+    noisy = torch_input + torch.randn_like(torch_input) * noise_factor
+    noisy = torch.clip(noisy, mu, std)
+    image = transforms.ToPILImage()(noisy)
+    return image
 
 
 def pil_image_to_bytes_string(image: PILImage) -> bytes:

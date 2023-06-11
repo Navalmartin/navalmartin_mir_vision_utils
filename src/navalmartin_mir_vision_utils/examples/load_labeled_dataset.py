@@ -33,6 +33,22 @@ if __name__ == '__main__':
 
     assert len(dataset) == len(dataset.image_labels), "Number of images not equal to the number of labels"
 
+    # get the images for the class
+    class_images = dataset.get_class_images(class_name="catamaran")
+
+    pprint.pprint(f"Number of images for class catamaran={len(class_images)}")
+
+    # get a random selection of images for catamaran
+    random_images = dataset.random_selection_for_class(size=15, class_name="catamaran")
+
+    pprint.pprint(f"Number of random images for class catamaran={len(random_images)}")
+
+    # remove the given images from the dataset
+    dataset.remove_images(images=random_images)
+
+    pprint.pprint(f"Number of images after removing random images {len(dataset)}")
+    pprint.pprint(f"Number of images per class after removing random images {dataset.n_images_per_label}")
+
     # shuffle the images
     dataset.shuffle()
 
