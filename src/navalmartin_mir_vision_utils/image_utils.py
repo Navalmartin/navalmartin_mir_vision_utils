@@ -6,6 +6,7 @@ from io import BytesIO
 from pathlib import Path
 from typing import List, Union
 
+import PIL.TiffImagePlugin
 from PIL import Image
 from PIL.ExifTags import TAGS
 
@@ -176,7 +177,7 @@ def remove_metadata_from_image(image: Image, new_filename: Path) -> Image.Image:
     return image_without_exif
 
 
-def get_image_metadata(image: Image) -> dict:
+def get_image_metadata(image: Image, convert_types: bool=True) -> dict:
     """Returns the image metadata
 
     Parameters
@@ -194,8 +195,16 @@ def get_image_metadata(image: Image) -> dict:
     # iterating over the dictionary
     for tag, value in image.getexif().items():
 
-        # extarcting all the metadata as key and value pairs and converting them from numerical value to string values
+        # extarcting all the metadata as key and value pairs and
+        # converting them from numerical value to string values
         if tag in TAGS:
+
+            if isinstance(value, bytes) and convert_types:
+                value = value.decode()
+
+            if isinstance(value, PIL.TiffImagePlugin.IFDRational) and convert_types:
+                value = value.numerator / value.denominator
+
             exif[TAGS[tag]] = value
 
     return exif
