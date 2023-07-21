@@ -5,8 +5,9 @@ import os
 from io import BytesIO
 from pathlib import Path
 from typing import List, Union
-import matplotlib.pyplot as plt
+
 from PIL import Image
+from PIL.ExifTags import TAGS
 
 
 from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
@@ -16,7 +17,7 @@ from navalmartin_mir_vision_utils.mir_vision_config import WITH_CV2
 
 
 def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
-                                         open_if_verify_success: bool = True) -> Image:
+                                         open_if_verify_success: bool = True) -> Union[Image.Image, None]:
     """Check if the provided bytes correspond to a valid
     PIL.Image. If IOError or  SyntaxError is raised it returns None
 
@@ -45,7 +46,7 @@ def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
         return None
 
 
-def is_valid_pil_image_file(image: Path, open_if_verify_success: bool = True) -> Image:
+def is_valid_pil_image_file(image: Path, open_if_verify_success: bool = True) -> Image.Image:
     """Check if the given image is a valid Pillow image
 
     Parameters
@@ -151,7 +152,7 @@ def get_img_files(base_path: Path,
     return list(list_image_files(base_path=base_path, valid_exts=img_formats))
 
 
-def remove_metadata_from_image(image: Image, new_filename: Path) -> None:
+def remove_metadata_from_image(image: Image, new_filename: Path) -> Image.Image:
     """Remove the metadata from the given image
     and saves it to the new location
 
@@ -168,7 +169,67 @@ def remove_metadata_from_image(image: Image, new_filename: Path) -> None:
     data = list(image.getdata())
     image_without_exif = Image.new(image.mode, image.size)
     image_without_exif.putdata(data)
-    image_without_exif.save(new_filename)
+
+    if new_filename is not None:
+        image_without_exif.save(new_filename)
+
+    return image_without_exif
+
+
+def get_image_metadata(image: Image) -> dict:
+    """Returns the image metadata
+
+    Parameters
+    ----------
+    image
+
+    Returns
+    -------
+
+    """
+
+    # dictionary to store metadata keys and value pairs.
+    exif = {}
+
+    # iterating over the dictionary
+    for tag, value in image.getexif().items():
+
+        # extarcting all the metadata as key and value pairs and converting them from numerical value to string values
+        if tag in TAGS:
+            exif[TAGS[tag]] = value
+
+    return exif
+
+
+def get_image_info(image: Image) -> dict:
+    """Returns the image info dictionary
+
+    Parameters
+    ----------
+    image
+
+    Returns
+    -------
+
+    """
+    info = {"filename": image.filename,
+            "format": image.format,
+            "mode": image.mode,
+            "img_size": image.size,
+            "width": image.width,
+            "height": image.height,
+            "palette": image.palette,
+            #"info": image.info
+            }
+
+    # iterating over the dictionary
+    for tag, value in image.info.items():
+
+        # extarcting all the metadata as key and value pairs and converting them from numerical value to string values
+        if tag in TAGS:
+            info[TAGS[tag]] = value
+
+    return info
 
 
 def create_thumbnail_from_pil_image(max_size: tuple,

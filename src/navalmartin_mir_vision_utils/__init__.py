@@ -1,14 +1,16 @@
 """
 Various utilities for working with images in the _mir_ project.
 """
-__version__ = "0.0.39"
+__version__ = "0.0.40"
 
 
 from .image_utils import (is_valid_pil_image_from_bytes_string,
                           is_valid_pil_image_file,
                           get_img_files,
                           get_pil_image_size,
-                          create_thumbnail_from_pil_image)
+                          create_thumbnail_from_pil_image,
+                          get_image_info,
+                          get_image_metadata)
 from .image_loaders import load_img, load_images, get_img_files
 from .image_transformers import (pil_to_ndarray,
                                  pil_image_to_bytes_string,

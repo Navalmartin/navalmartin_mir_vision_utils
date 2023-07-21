@@ -3,7 +3,9 @@ from navalmartin_mir_vision_utils import (is_valid_pil_image_file,
                                           get_pil_image_size,
                                           get_img_files,
                                           pil_image_to_bytes_string,
-                                          create_thumbnail_from_pil_image)
+                                          create_thumbnail_from_pil_image,
+                                          get_image_metadata,
+                                          get_image_info)
 
 from navalmartin_mir_vision_utils.mir_vision_io import get_md5_checksum
 
@@ -34,3 +36,29 @@ if __name__ == '__main__':
                                             image_filename=image_file)
 
     image.show()
+
+    # reload the image
+    image = is_valid_pil_image_file(image=image_file)
+
+    image_info = get_image_info(image=image)
+
+    print(image_info)
+
+    image_metadata = get_image_metadata(image)
+    print(image_metadata)
+
+    image_file = Path("/home/alex/qi3/mir_vision_utils/test_data/P1030888.JPG")
+    image = is_valid_pil_image_file(image=image_file)
+
+    image_info = get_image_info(image=image)
+
+    print(image_info)
+
+    image_metadata = get_image_metadata(image)
+    print(image_metadata)
+
+
+
+
+
+
