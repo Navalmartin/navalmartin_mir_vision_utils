@@ -10,11 +10,19 @@ import PIL.TiffImagePlugin
 from PIL import Image
 from PIL.ExifTags import TAGS
 
-
 from navalmartin_mir_vision_utils.exceptions import InvalidPILImageMode
 from navalmartin_mir_vision_utils.image_enums import (ImageFileEnumType, IMAGE_STR_TYPES, VALID_PIL_MODES_STR)
 from navalmartin_mir_vision_utils.utils.messages import ERROR
 from navalmartin_mir_vision_utils.mir_vision_config import WITH_CV2
+
+
+def get_pil_image_as_bytes_io_value(image: Image.Image, img_format: str = None):
+    if img_format is None or img_format == "":
+        img_format = image.format
+
+    in_mem_file = BytesIO()
+    image.save(in_mem_file, format=img_format)
+    return in_mem_file.getvalue()
 
 
 def is_valid_pil_image_from_bytes_string(image_byte_string: bytes,
@@ -177,12 +185,16 @@ def remove_metadata_from_image(image: Image, new_filename: Path) -> Image.Image:
     return image_without_exif
 
 
-def get_image_metadata(image: Image, convert_types: bool=True) -> dict:
-    """Returns the image metadata
+def get_image_metadata(image: Image, convert_types: bool = True) -> dict:
+    """Returns the image metadata. If convert_types == True
+    and the attempted conversion of a value raises an
+    exception then the value is not added in the result.
 
     Parameters
     ----------
-    image
+    convert_types: Flag indicating whether the metadata values
+    are converted or decoded
+    image: The image to get the metadata
 
     Returns
     -------
@@ -195,17 +207,22 @@ def get_image_metadata(image: Image, convert_types: bool=True) -> dict:
     # iterating over the dictionary
     for tag, value in image.getexif().items():
 
-        # extarcting all the metadata as key and value pairs and
+        # extracting all the metadata as key and value pairs and
         # converting them from numerical value to string values
         if tag in TAGS:
 
-            if isinstance(value, bytes) and convert_types:
-                value = value.decode()
+            try:
 
-            if isinstance(value, PIL.TiffImagePlugin.IFDRational) and convert_types:
-                value = value.numerator / value.denominator
+                if isinstance(value, PIL.TiffImagePlugin.IFDRational) and convert_types:
+                    value = value.numerator / value.denominator
 
-            exif[TAGS[tag]] = value
+                if isinstance(value, bytes) and convert_types:
+                    value = value.decode()
+
+                exif[TAGS[tag]] = value
+
+            except Exception:
+                pass
 
     return exif
 
@@ -228,7 +245,7 @@ def get_image_info(image: Image) -> dict:
             "width": image.width,
             "height": image.height,
             "palette": image.palette,
-            #"info": image.info
+            # "info": image.info
             }
 
     # iterating over the dictionary

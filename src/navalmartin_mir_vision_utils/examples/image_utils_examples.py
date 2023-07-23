@@ -5,7 +5,8 @@ from navalmartin_mir_vision_utils import (is_valid_pil_image_file,
                                           pil_image_to_bytes_string,
                                           create_thumbnail_from_pil_image,
                                           get_image_metadata,
-                                          get_image_info)
+                                          get_image_info,
+                                          remove_metadata_from_image)
 
 from navalmartin_mir_vision_utils.mir_vision_io import get_md5_checksum
 
@@ -35,7 +36,7 @@ if __name__ == '__main__':
     image = create_thumbnail_from_pil_image(max_size=(50, 50),
                                             image_filename=image_file)
 
-    image.show()
+    #image.show()
 
     # reload the image
     image = is_valid_pil_image_file(image=image_file)
@@ -54,8 +55,19 @@ if __name__ == '__main__':
 
     print(image_info)
 
-    image_metadata = get_image_metadata(image)
-    print(image_metadata)
+    #image_metadata = get_image_metadata(image)
+    #print(image_metadata)
+
+    image_file = Path("/home/alex/qi3/mir_vision_utils/test_data/P1030888.JPG")
+    image = is_valid_pil_image_file(image=image_file)
+
+    #image.show()
+
+    new_image = remove_metadata_from_image(image, new_filename=None)
+    #new_image.show()
+
+    thumbnail_img = create_thumbnail_from_pil_image(image=new_image, max_size=(500, 500))
+    thumbnail_img.show()
 
 
 

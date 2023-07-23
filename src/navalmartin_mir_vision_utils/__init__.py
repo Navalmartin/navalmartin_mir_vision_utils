@@ -11,7 +11,8 @@ from .image_utils import (is_valid_pil_image_from_bytes_string,
                           create_thumbnail_from_pil_image,
                           get_image_info,
                           get_image_metadata,
-                          remove_metadata_from_image)
+                          remove_metadata_from_image,
+                          get_pil_image_as_bytes_io_value)
 from .image_loaders import load_img, load_images, get_img_files
 from .image_transformers import (pil_to_ndarray,
                                  pil_image_to_bytes_string,
