@@ -260,30 +260,42 @@ def get_image_info(image: Image) -> dict:
 
 def create_thumbnail_from_pil_image(max_size: tuple,
                                     image_filename: Path = None,
-                                    image: Image = None) -> Image:
+                                    image: Image.Image = None) -> Image:
     """Create a thumbnail from the given image filename or the
     given image. If both are None it raises ValueError.
     If image_filename is not None it opens the image
     specified from the file and verifies its integrity.
-    If image is not None it creates a thumbnail inplace
+    If image is not None it creates a thumbnail inplace so if you need the original
+    image then pass a copy of it in this function
 
     Parameters
     ----------
     max_size: The max siz of the thumbnail
     image_filename: Image filename to read the image
-    image: An Image instance
+    image: An Image instance.
 
     Returns
     -------
     An instance of Image class
     """
-    if image_filename is not None:
-        image_thub = is_valid_pil_image_file(image=image_filename,
-                                             open_if_verify_success=True)
 
+    if image_filename is None and image is None:
+        raise ValueError("image_filename and image parameters cannot be simultaneously None")
+
+    if image_filename is not None and image is not None:
+        raise ValueError("image_filename and image parameters cannot be simultaneously not None")
+
+    if image_filename is not None:
+
+        # read the image
+        image_thub: Image.Image = is_valid_pil_image_file(image=image_filename,
+                                                          open_if_verify_success=True)
+
+        # create thumbnail of the read imge
         image_thub.thumbnail(max_size)
         return image_thub
     elif image is not None:
+
         image.thumbnail(max_size)
         return image
 
