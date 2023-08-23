@@ -1,7 +1,7 @@
 """
 Various utilities for working with images in the _mir_ project.
 """
-__version__ = "0.0.45"
+__version__ = "0.0.46"
 
 
 from .image_utils import (is_valid_pil_image_from_bytes_string,
@@ -34,7 +34,7 @@ from .plot_images import (plot_pil_image, plot_pil_images,
                           plot_pytorch_image)
 from .exceptions import InvalidConfiguration
 from .mir_vision_types import TorchTensor
-from image_quality.brisque import brisque_score
+from .image_quality.brisque import brisque_score
 
 
 
