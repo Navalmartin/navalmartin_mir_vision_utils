@@ -18,7 +18,7 @@ from libsvm import svmutil
 
 from navalmartin_mir_vision_utils.statistics.distributions.asymmetric_generalized_gaussian import AsymmetricGeneralizedGaussian
 from navalmartin_mir_vision_utils.statistics.statistics_utils import gaussian_kernel2d
-from navalmartin_mir_vision_utils.image_transformers import pil2ndarray
+from navalmartin_mir_vision_utils.image_transformers import pil_to_ndarray
 from navalmartin_mir_vision_utils.image_quality.models import MODELS_PATH
 from navalmartin_mir_vision_utils.mir_vision_config import WITH_SKIMAGE_VERSION
 
@@ -50,7 +50,7 @@ class Brisque:
         kernel_size: int = 7,
         sigma: float = 7 / 6,
     ):
-        self.image = pil2ndarray(image)
+        self.image = pil_to_ndarray(image)
 
         if self.image.shape[-1] == 3:
             self.image = skimage.color.rgb2gray(self.image)
@@ -207,3 +207,6 @@ def score(image: PIL.Image.Image, kernel_size=7, sigma=7 / 6) -> float:
 
     scaled_features = calculate_features(image, kernel_size, sigma)
     return predict(scaled_features)
+
+def brisque_score(image: PIL.Image.Image, kernel_size=7, sigma=7 / 6) -> float:
+    return score(image=image, kernel_size=kernel_size, sigma=sigma)
