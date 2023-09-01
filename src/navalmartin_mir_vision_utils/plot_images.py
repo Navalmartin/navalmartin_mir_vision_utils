@@ -1,11 +1,15 @@
 import os
 from typing import List, Union, Tuple
-import matplotlib.pyplot as plt
+
 import textwrap
 from PIL.Image import Image as PILImage
-from navalmartin_mir_vision_utils.mir_vision_config import WITH_TORCH
+from navalmartin_mir_vision_utils.mir_vision_config import WITH_TORCH, WITH_MATPLOTLIB
 from navalmartin_mir_vision_utils.mir_vision_types import TorchTensor
 from navalmartin_mir_vision_utils.exceptions import InvalidConfiguration
+
+if WITH_MATPLOTLIB:
+    import matplotlib.pyplot as plt
+
 
 if WITH_TORCH:
     import torchvision
@@ -26,8 +30,13 @@ def plot_pytorch_tensor_images(images: TorchTensor, title: str,
     None
     """
 
+    if not WITH_MATPLOTLIB:
+        raise InvalidConfiguration(message="matplotlib is not installed "
+                                           "so cannot use plot_pytorch_tensor_images")
+
     if not WITH_TORCH:
-        raise InvalidConfiguration(message="PyTorch is not installed so cannot use plot_pytorch_tensor_images")
+        raise InvalidConfiguration(message="PyTorch is not installed "
+                                           "so cannot use plot_pytorch_tensor_images")
 
     plt.figure()
     plt.title(title)
@@ -52,8 +61,13 @@ def plot_pytorch_image(image: TorchTensor,
 
     """
 
+    if not WITH_MATPLOTLIB:
+        raise InvalidConfiguration(message="matplotlib is not installed "
+                                           "so cannot use plot_pytorch_tensor_images")
+
     if not WITH_TORCH:
-        raise InvalidConfiguration(message="PyTorch is not installed so cannot use plot_pytorch_image")
+        raise InvalidConfiguration(message="PyTorch is not installed "
+                                           "so cannot use plot_pytorch_image")
 
     if image is None:
         raise ValueError("The provided image is None")
@@ -89,6 +103,10 @@ def plot_pil_image(image: PILImage,
     -------
 
     """
+
+    if not WITH_MATPLOTLIB:
+        raise InvalidConfiguration(message="matplotlib is not installed "
+                                           "so cannot use plot_pytorch_tensor_images")
 
     if image is None:
         raise ValueError("The provided image is None")
@@ -135,6 +153,11 @@ def plot_pil_images(images: List[PILImage],
     -------
 
     """
+
+    if not WITH_MATPLOTLIB:
+        raise InvalidConfiguration(message="matplotlib is not installed "
+                                           "so cannot use plot_pytorch_tensor_images")
+
     if not images:
         print("No images to display.")
         return
@@ -167,6 +190,11 @@ def plot_pil_images_with_label(images: List[Tuple[PILImage, Union[int, str]]],
                                height: int = 8, max_images: int = 15,
                                label_wrap_length: int = 50,
                                label_font_size: int = 8):
+
+    if not WITH_MATPLOTLIB:
+        raise InvalidConfiguration(message="matplotlib is not installed "
+                                           "so cannot use plot_pytorch_tensor_images")
+
     if not images:
         print("No images to display.")
         return
